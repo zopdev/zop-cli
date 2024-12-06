@@ -9,12 +9,15 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"gofr.dev/pkg/gofr"
 
-	impHandler "github.com/zopdev/zop-cli/handler/cloud/import"
-	impStore "github.com/zopdev/zop-cli/store/cloud/import"
+	impHandler "zop/handler/cloud/import"
+	impService "zop/service/cloud/import/gcp"
+	impStore "zop/store/cloud/import/gcp"
 )
 
 func main() {
 	app := gofr.NewCMD()
+
+	app.AddHTTPService("api-service", app.Config.Get("ZOP_API_URL"))
 
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
@@ -31,7 +34,8 @@ func main() {
 	defer db.Close()
 
 	accountStore := impStore.New(db)
-	importHandler := impHandler.New(accountStore)
+	accountSvc := impService.New(accountStore)
+	importHandler := impHandler.New(accountSvc)
 
 	app.SubCommand("cloud import", importHandler.Import)
 

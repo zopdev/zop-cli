@@ -1,8 +1,9 @@
-module github.com/zopdev/zop-cli
+module zop
 
-go 1.23.3
+go 1.22.0
 
 require (
+	cloud.google.com/go/iam v1.2.2
 	github.com/mattn/go-sqlite3 v1.14.24
 	gofr.dev v1.28.0
 )
@@ -12,7 +13,6 @@ require (
 	cloud.google.com/go/auth v0.10.2 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.5 // indirect
 	cloud.google.com/go/compute/metadata v0.5.2 // indirect
-	cloud.google.com/go/iam v1.2.2 // indirect
 	cloud.google.com/go/pubsub v1.45.1 // indirect
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/DATA-DOG/go-sqlmock v1.5.2 // indirect

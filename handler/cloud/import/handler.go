@@ -5,20 +5,20 @@ import (
 )
 
 type Handler struct {
-	accountStore AccountGetter
+	accountService AccountImporter
 }
 
-func New(getter AccountGetter) *Handler {
+func New(getter AccountImporter) *Handler {
 	return &Handler{
-		accountStore: getter,
+		accountService: getter,
 	}
 }
 
 func (h *Handler) Import(ctx *gofr.Context) (any, error) {
-	acc, err := h.accountStore.GetAccounts(ctx)
+	err := h.accountService.PostAccounts(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return acc, nil
+	return "Successfully Imported!", nil
 }
