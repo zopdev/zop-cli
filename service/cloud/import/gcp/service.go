@@ -1,3 +1,4 @@
+// Package gcp provides a service for importing GCP service accounts into zop api service.
 package gcp
 
 import (
@@ -11,9 +12,12 @@ import (
 )
 
 var (
+	// ErrInvalidOrExpiredToken is returned when the token is invalid or expired for the gcloud user account
+	// and a new token cannot be generated. User is advised to run gcloud auth login to refresh the token.
 	ErrInvalidOrExpiredToken = fmt.Errorf("invalid or expired token, please login again")
 )
 
+// Service is a service for importing GCP service accounts into zop api service.
 type Service struct {
 	store cloudImporter.AccountStore
 }
@@ -24,6 +28,9 @@ func New(store cloudImporter.AccountStore) *Service {
 	}
 }
 
+// PostAccounts posts the GCP service accounts to the api service.
+// It fetches the accounts from the store layer and posts them to the api service.
+// If an account is of type user account, it generates a token and then creates a service account.
 func (s *Service) PostAccounts(ctx *gofr.Context) error {
 	accounts, err := s.store.GetAccounts(ctx)
 	if err != nil {

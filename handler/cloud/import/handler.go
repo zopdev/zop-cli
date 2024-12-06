@@ -17,6 +17,7 @@ func New(getter AccountImporter) *Handler {
 	}
 }
 
+// Import is a handler for importing cloud accounts to zop api.
 func (h *Handler) Import(ctx *gofr.Context) (any, error) {
 	err := h.accountService.PostAccounts(ctx)
 	if err != nil {

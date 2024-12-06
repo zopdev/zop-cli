@@ -1,16 +1,19 @@
 package models
 
+// AccountStore stores the accountId and creds value for gcp account.
 type AccountStore struct {
 	AccountID string `json:"account_id"`
 	Value     []byte `json:"value"`
 }
 
+// UserAccount is a struct for storing the user account details.
 type UserAccount struct {
 	RefreshToken string `json:"refresh_token"`
 	ClientID     string `json:"client_id"`
 	ClientSecret string `json:"client_secret"`
 }
 
+// ServiceAccount is a struct for storing the service account details.
 type ServiceAccount struct {
 	Type                    string `json:"type"`
 	ProjectID               string `json:"project_id"`
@@ -25,6 +28,7 @@ type ServiceAccount struct {
 	UniverseDomain          string `json:"universe_domain"`
 }
 
+// PostCloudAccountRequest is a struct for forming the request body for posting cloud accounts to zop api.
 type PostCloudAccountRequest struct {
 	Name        string `json:"name"`
 	Provider    string `json:"provider"`
