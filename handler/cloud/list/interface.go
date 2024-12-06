@@ -2,7 +2,7 @@ package list
 
 import (
 	"gofr.dev/pkg/gofr"
-	"zop/models"
+	"zop.dev/cli/zop/models"
 )
 
 type AccountGetter interface {

@@ -9,11 +9,11 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"gofr.dev/pkg/gofr"
 
-	impHandler "zop/handler/cloud/import"
-	listHandler "zop/handler/cloud/list"
-	impService "zop/service/cloud/import/gcp"
-	listSvc "zop/service/cloud/list"
-	impStore "zop/store/cloud/import/gcp"
+	impHandler "zop.dev/cli/zop/handler/cloud/import"
+	listHandler "zop.dev/cli/zop/handler/cloud/list"
+	impService "zop.dev/cli/zop/service/cloud/import/gcp"
+	listSvc "zop.dev/cli/zop/service/cloud/list"
+	impStore "zop.dev/cli/zop/store/cloud/import/gcp"
 )
 
 func main() {
@@ -23,7 +23,7 @@ func main() {
 
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
-		log.Fatalf("Failed to get the user's home directory: %v", err)
+		app.Logger().Fatalf("Failed to get the user's home directory: %v", err)
 	}
 
 	// Build the path to the credentials.db file

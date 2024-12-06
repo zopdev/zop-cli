@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"gofr.dev/pkg/gofr"
 	"io"
-	"zop/models"
+	"zop.dev/cli/zop/models"
 )
 
 type Service struct {
