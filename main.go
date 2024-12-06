@@ -10,7 +10,9 @@ import (
 	"gofr.dev/pkg/gofr"
 
 	impHandler "zop/handler/cloud/import"
+	listHandler "zop/handler/cloud/list"
 	impService "zop/service/cloud/import/gcp"
+	listSvc "zop/service/cloud/list"
 	impStore "zop/store/cloud/import/gcp"
 )
 
@@ -37,7 +39,12 @@ func main() {
 	accountSvc := impService.New(accountStore)
 	importHandler := impHandler.New(accountSvc)
 
+	ls := listSvc.New()
+	lh := listHandler.New(ls)
+
 	app.SubCommand("cloud import", importHandler.Import)
+
+	app.SubCommand("cloud list", lh.List)
 
 	app.Run()
 }
