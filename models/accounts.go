@@ -25,18 +25,6 @@ type ServiceAccount struct {
 	UniverseDomain          string `json:"universe_domain"`
 }
 
-type CloudAccountResponse struct {
-	Name            string `json:"name"`
-	Provider        string `json:"provider"`
-	ID              int64  `json:"id,omitempty"`
-	ProviderID      string `json:"providerId"`
-	ProviderDetails any    `json:"providerDetails"`
-	Credentials     any    `json:"credentials,omitempty"`
-	CreatedAt       string `json:"createdAt"`
-	UpdatedAt       string `json:"updatedAt"`
-	DeletedAt       string `json:"deletedAt,omitempty"`
-}
-
 type PostCloudAccountRequest struct {
 	Name        string `json:"name"`
 	Provider    string `json:"provider"`

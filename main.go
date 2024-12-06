@@ -10,9 +10,7 @@ import (
 	"gofr.dev/pkg/gofr"
 
 	impHandler "zop.dev/cli/zop/handler/cloud/import"
-	listHandler "zop.dev/cli/zop/handler/cloud/list"
 	impService "zop.dev/cli/zop/service/cloud/import/gcp"
-	listSvc "zop.dev/cli/zop/service/cloud/list"
 	impStore "zop.dev/cli/zop/store/cloud/import/gcp"
 )
 
@@ -26,7 +24,7 @@ func main() {
 		app.Logger().Fatalf("Failed to get the user's home directory: %v", err)
 	}
 
-	// Build the path to the credentials.db file
+	// Build the path to the credentials.db file of gcloud
 	dbPath := filepath.Join(homeDir, ".config", "gcloud", "credentials.db")
 
 	db, err := sql.Open("sqlite3", dbPath)
@@ -39,12 +37,7 @@ func main() {
 	accountSvc := impService.New(accountStore)
 	importHandler := impHandler.New(accountSvc)
 
-	ls := listSvc.New()
-	lh := listHandler.New(ls)
-
 	app.SubCommand("cloud import", importHandler.Import)
-
-	app.SubCommand("cloud list", lh.List)
 
 	app.Run()
 }
