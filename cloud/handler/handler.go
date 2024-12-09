@@ -23,6 +23,8 @@ func New(getter AccountImporter) *Handler {
 func (h *Handler) Import(ctx *gofr.Context) (any, error) {
 	err := h.accountService.PostAccounts(ctx)
 	if err != nil {
+		ctx.Logger.Errorf("error importing accounts to zop api: %v", err)
+
 		return nil, err
 	}
 

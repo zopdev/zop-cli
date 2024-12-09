@@ -57,11 +57,10 @@ func generateNewServiceAccount(ctx *gofr.Context, value []byte) ([]*serviceAccou
 		return nil, err
 	}
 
-	return getNewServiceAccounts(ctx, projects, token)
+	return getNewServiceAccounts(ctx, projects)
 }
 
-func getNewServiceAccounts(ctx *gofr.Context, projects []*cloudresourcemanager.Project,
-	token *oauth2.Token) ([]*serviceAccountCreds, error) {
+func getNewServiceAccounts(ctx *gofr.Context, projects []*cloudresourcemanager.Project) ([]*serviceAccountCreds, error) {
 	var serviceAccounts = make([]*serviceAccountCreds, 0)
 
 	for _, project := range projects {
@@ -69,26 +68,21 @@ func getNewServiceAccounts(ctx *gofr.Context, projects []*cloudresourcemanager.P
 		serviceAccountName := fmt.Sprintf("zop-dev-%v", time.Now().Unix())
 		config := newServiceAccountConfig(projectID, serviceAccountName)
 
-		if err := checkProjectAccess(ctx, config.ProjectID, token); err != nil {
-			ctx.Logger.Errorf("Project access check failed: %v", err)
-			continue
-		}
-
 		serviceAccount, err := createServiceAccount(ctx, config)
 		if err != nil {
-			ctx.Logger.Errorf("Failed to create service account: %v", err)
+			ctx.Logger.Errorf("Failed to create service account for projectID %s : %v", projectID, err)
 			continue
 		}
 
 		key, err := createServiceAccountKey(ctx, serviceAccount)
 		if err != nil {
-			ctx.Logger.Errorf("Failed to create service account key: %v", err)
+			ctx.Logger.Errorf("Failed to create service account key for projectID %s : %v", projectID, err)
 			continue
 		}
 
 		decodedKey, err := base64.StdEncoding.DecodeString(string(key))
 		if err != nil {
-			ctx.Errorf("Failed to decode Base64 string: %v", err)
+			ctx.Logger.Errorf("Failed to decode Base64 string: %v", err)
 			continue
 		}
 
@@ -128,20 +122,6 @@ func newServiceAccountConfig(projectID, serviceAccountName string) *serviceAccou
 			"roles/pubsub.admin",
 		},
 	}
-}
-
-func checkProjectAccess(ctx context.Context, projectID string, accessToken *oauth2.Token) error {
-	crmService, err := cloudresourcemanager.NewService(ctx, option.WithTokenSource(oauth2.StaticTokenSource(accessToken)))
-	if err != nil {
-		return errors.Wrap(err, "failed to create Cloud Resource Manager client")
-	}
-
-	_, err = crmService.Projects.Get(projectID).Do()
-	if err != nil {
-		return errors.Wrap(err, fmt.Sprintf("project %s is not accessible", projectID))
-	}
-
-	return nil
 }
 
 func createServiceAccount(ctx context.Context, config *serviceAccountConfig) (*iam.ServiceAccount, error) {
@@ -248,7 +228,7 @@ func refreshAccessToken(ctx *gofr.Context, clientID, clientSecret, refreshToken 
 		"grant_type":    []string{"refresh_token"},
 	}
 
-	resp, err := ctx.GetHTTPService("gcloud-service").
+	resp, err := ctx.GetHTTPService(GcloudService).
 		Post(ctx, "token", nil, []byte(data.Encode()))
 	if err != nil || resp.StatusCode != http.StatusOK {
 		return nil, errors.Wrap(err, "failed to refresh token")
