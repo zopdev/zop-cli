@@ -1,7 +1,7 @@
 package gcp
 
-// ServiceAccount is a struct for storing the service account details.
-type ServiceAccount struct {
+// serviceAccountCreds is a struct for storing the service account details.
+type serviceAccountCreds struct {
 	Type                    string `json:"type"`
 	ProjectID               string `json:"project_id"`
 	PrivateKeyID            string `json:"private_key_id"`
@@ -15,15 +15,15 @@ type ServiceAccount struct {
 	UniverseDomain          string `json:"universe_domain"`
 }
 
-// UserAccount is a struct for storing the user account details.
-type UserAccount struct {
+// userAccountCreds is a struct for storing the user account details.
+type userAccountCreds struct {
 	RefreshToken string `json:"refresh_token"`
 	ClientID     string `json:"client_id"`
 	ClientSecret string `json:"client_secret"`
 }
 
-// PostCloudAccountRequest is a struct for forming the request body for posting cloud accounts to zop api.
-type PostCloudAccountRequest struct {
+// request is a struct for forming the request body for posting cloud accounts to zop api.
+type request struct {
 	Name        string `json:"name"`
 	Provider    string `json:"provider"`
 	Credentials any    `json:"credentials"`

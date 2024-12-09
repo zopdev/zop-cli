@@ -24,8 +24,8 @@ type serviceAccountConfig struct {
 	Roles              []string
 }
 
-func getServiceAccounts(ctx *gofr.Context, value []byte) ([]*ServiceAccount, error) {
-	var acc ServiceAccount
+func getServiceAccounts(ctx *gofr.Context, value []byte) ([]*serviceAccountCreds, error) {
+	var acc serviceAccountCreds
 
 	err := json.Unmarshal(value, &acc)
 	if err != nil {
@@ -36,11 +36,11 @@ func getServiceAccounts(ctx *gofr.Context, value []byte) ([]*ServiceAccount, err
 		return generateNewServiceAccount(ctx, value)
 	}
 
-	return []*ServiceAccount{&acc}, nil
+	return []*serviceAccountCreds{&acc}, nil
 }
 
-func generateNewServiceAccount(ctx *gofr.Context, value []byte) ([]*ServiceAccount, error) {
-	var acc UserAccount
+func generateNewServiceAccount(ctx *gofr.Context, value []byte) ([]*serviceAccountCreds, error) {
+	var acc userAccountCreds
 
 	err := json.Unmarshal(value, &acc)
 	if err != nil {
@@ -61,8 +61,8 @@ func generateNewServiceAccount(ctx *gofr.Context, value []byte) ([]*ServiceAccou
 }
 
 func getNewServiceAccounts(ctx *gofr.Context, projects []*cloudresourcemanager.Project,
-	token *oauth2.Token) ([]*ServiceAccount, error) {
-	var serviceAccounts = make([]*ServiceAccount, 0)
+	token *oauth2.Token) ([]*serviceAccountCreds, error) {
+	var serviceAccounts = make([]*serviceAccountCreds, 0)
 
 	for _, project := range projects {
 		projectID := project.ProjectId
@@ -97,7 +97,7 @@ func getNewServiceAccounts(ctx *gofr.Context, projects []*cloudresourcemanager.P
 			continue
 		}
 
-		var svAcc ServiceAccount
+		var svAcc serviceAccountCreds
 
 		err = json.Unmarshal(decodedKey, &svAcc)
 		if err != nil {

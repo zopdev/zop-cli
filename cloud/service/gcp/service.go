@@ -58,7 +58,7 @@ func (s *Service) PostAccounts(ctx *gofr.Context) error {
 		}
 
 		for _, svcAcc := range svAccs {
-			body, er := json.Marshal(&PostCloudAccountRequest{
+			body, er := json.Marshal(&request{
 				Name:        acc.AccountID,
 				Provider:    "gcp",
 				Credentials: svcAcc,
