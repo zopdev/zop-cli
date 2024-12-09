@@ -6,6 +6,8 @@ import (
 
 	"go.uber.org/mock/gomock"
 	"gofr.dev/pkg/gofr"
+	"gofr.dev/pkg/gofr/container"
+	"gofr.dev/pkg/gofr/logging"
 )
 
 var (
@@ -39,8 +41,8 @@ func TestImport_Failure(t *testing.T) {
 	mockAccountImporter := NewMockAccountImporter(ctrl)
 	mockAccountImporter.EXPECT().PostAccounts(gomock.Any()).Return(errTest)
 
+	ctx := &gofr.Context{Container: &container.Container{Logger: logging.NewMockLogger(logging.INFO)}}
 	handler := New(mockAccountImporter, nil)
-	ctx := &gofr.Context{}
 
 	result, err := handler.Import(ctx)
 
@@ -52,7 +54,7 @@ func TestImport_Failure(t *testing.T) {
 		t.Errorf("expected nil result, got %v", result)
 	}
 
-	if errors.Is(err, errTest) {
+	if !errors.Is(err, errTest) {
 		t.Errorf("expected 'import error', got %v", err.Error())
 	}
 }

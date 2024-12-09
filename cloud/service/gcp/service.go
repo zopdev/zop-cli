@@ -10,6 +10,11 @@ import (
 	"gofr.dev/pkg/gofr/cmd/terminal"
 )
 
+const (
+	ZopAPIService = "api-service"
+	GcloudService = "gcloud-service"
+)
+
 var (
 	// ErrInvalidOrExpiredToken is returned when the token is invalid or expired for the gcloud user account
 	// and a new token cannot be generated. User is advised to run gcloud auth login to refresh the token.
@@ -45,7 +50,7 @@ func (s *Service) PostAccounts(ctx *gofr.Context) error {
 		return err
 	}
 
-	api := ctx.GetHTTPService("api-service")
+	api := ctx.GetHTTPService(ZopAPIService)
 
 	defer terminal.NewDotSpinner(ctx.Out).Spin(ctx).Stop()
 

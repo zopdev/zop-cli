@@ -24,8 +24,8 @@ const (
 func main() {
 	app := gofr.NewCMD()
 
-	app.AddHTTPService("api-service", app.Config.Get("ZOP_API_URL"))
-	app.AddHTTPService("gcloud-service", tokenURL,
+	app.AddHTTPService(impService.ZopAPIService, app.Config.Get("ZOP_API_URL"))
+	app.AddHTTPService(impService.GcloudService, tokenURL,
 		&service.DefaultHeaders{Headers: map[string]string{"Content-Type": "application/x-www-form-urlencoded"}})
 
 	homeDir, err := os.UserHomeDir()

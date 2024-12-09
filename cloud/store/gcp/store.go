@@ -22,10 +22,10 @@ func New(db *sql.DB) *Store {
 
 // GetAccounts returns a list of accounts from the database reading the account_id and value
 // from the gcloud database at ~/.config/gcloud/credentials.db.
-func (s *Store) GetAccounts(_ *gofr.Context) ([]AccountStore, error) {
+func (s *Store) GetAccounts(ctx *gofr.Context) ([]AccountStore, error) {
 	ans := make([]AccountStore, 0)
 
-	rows, err := s.db.Query("SELECT account_id, value FROM credentials")
+	rows, err := s.db.QueryContext(ctx, "SELECT account_id, value FROM credentials")
 	if err != nil || rows.Err() != nil {
 		return nil, err
 	}
