@@ -51,3 +51,9 @@ Run the following command install zop-cli:
    ```bash
     zop cloud import
     ```
+2. **cloud list**  
+   Lists all the cloud accounts present in the zop-api.
+
+   ```bash
+    zop cloud list
+    ```
