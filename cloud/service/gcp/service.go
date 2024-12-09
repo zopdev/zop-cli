@@ -8,8 +8,6 @@ import (
 
 	"gofr.dev/pkg/gofr"
 	"gofr.dev/pkg/gofr/cmd/terminal"
-	"zop.dev/cli/zop/models"
-	cloudImporter "zop.dev/cli/zop/service/cloud/import"
 )
 
 var (
@@ -20,10 +18,10 @@ var (
 
 // Service is a service for importing GCP service accounts into zop api service.
 type Service struct {
-	store cloudImporter.AccountStore
+	store AccountStore
 }
 
-func New(store cloudImporter.AccountStore) *Service {
+func New(store AccountStore) *Service {
 	return &Service{
 		store: store,
 	}
@@ -60,7 +58,7 @@ func (s *Service) PostAccounts(ctx *gofr.Context) error {
 		}
 
 		for _, svcAcc := range svAccs {
-			body, er := json.Marshal(&models.PostCloudAccountRequest{
+			body, er := json.Marshal(&PostCloudAccountRequest{
 				Name:        acc.AccountID,
 				Provider:    "gcp",
 				Credentials: svcAcc,

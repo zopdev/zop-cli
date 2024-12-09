@@ -1,4 +1,4 @@
-package export
+package handler
 
 import "gofr.dev/pkg/gofr"
 

@@ -16,8 +16,6 @@ import (
 	"google.golang.org/api/cloudresourcemanager/v1"
 	"google.golang.org/api/iam/v1"
 	"google.golang.org/api/option"
-
-	"zop.dev/cli/zop/models"
 )
 
 type serviceAccountConfig struct {
@@ -26,8 +24,8 @@ type serviceAccountConfig struct {
 	Roles              []string
 }
 
-func getServiceAccounts(ctx *gofr.Context, value []byte) ([]*models.ServiceAccount, error) {
-	var acc models.ServiceAccount
+func getServiceAccounts(ctx *gofr.Context, value []byte) ([]*ServiceAccount, error) {
+	var acc ServiceAccount
 
 	err := json.Unmarshal(value, &acc)
 	if err != nil {
@@ -38,11 +36,11 @@ func getServiceAccounts(ctx *gofr.Context, value []byte) ([]*models.ServiceAccou
 		return generateNewServiceAccount(ctx, value)
 	}
 
-	return []*models.ServiceAccount{&acc}, nil
+	return []*ServiceAccount{&acc}, nil
 }
 
-func generateNewServiceAccount(ctx *gofr.Context, value []byte) ([]*models.ServiceAccount, error) {
-	var acc models.UserAccount
+func generateNewServiceAccount(ctx *gofr.Context, value []byte) ([]*ServiceAccount, error) {
+	var acc UserAccount
 
 	err := json.Unmarshal(value, &acc)
 	if err != nil {
@@ -63,8 +61,8 @@ func generateNewServiceAccount(ctx *gofr.Context, value []byte) ([]*models.Servi
 }
 
 func getNewServiceAccounts(ctx *gofr.Context, projects []*cloudresourcemanager.Project,
-	token *oauth2.Token) ([]*models.ServiceAccount, error) {
-	var serviceAccounts = make([]*models.ServiceAccount, 0)
+	token *oauth2.Token) ([]*ServiceAccount, error) {
+	var serviceAccounts = make([]*ServiceAccount, 0)
 
 	for _, project := range projects {
 		projectID := project.ProjectId
@@ -99,7 +97,7 @@ func getNewServiceAccounts(ctx *gofr.Context, projects []*cloudresourcemanager.P
 			continue
 		}
 
-		var svAcc models.ServiceAccount
+		var svAcc ServiceAccount
 
 		err = json.Unmarshal(decodedKey, &svAcc)
 		if err != nil {

@@ -6,8 +6,6 @@ import (
 	"database/sql"
 
 	"gofr.dev/pkg/gofr"
-
-	"zop.dev/cli/zop/models"
 )
 
 // Store is a struct that holds the database connection and implements the AccountGetter interface.
@@ -24,8 +22,8 @@ func New(db *sql.DB) *Store {
 
 // GetAccounts returns a list of accounts from the database reading the account_id and value
 // from the gcloud database at ~/.config/gcloud/credentials.db.
-func (s *Store) GetAccounts(_ *gofr.Context) ([]models.AccountStore, error) {
-	ans := make([]models.AccountStore, 0)
+func (s *Store) GetAccounts(_ *gofr.Context) ([]AccountStore, error) {
+	ans := make([]AccountStore, 0)
 
 	rows, err := s.db.Query("SELECT account_id, value FROM credentials")
 	if err != nil || rows.Err() != nil {
@@ -33,7 +31,7 @@ func (s *Store) GetAccounts(_ *gofr.Context) ([]models.AccountStore, error) {
 	}
 
 	for rows.Next() {
-		var acc models.AccountStore
+		var acc AccountStore
 
 		err = rows.Scan(&acc.AccountID, &acc.Value)
 		if err != nil {

@@ -10,9 +10,9 @@ import (
 	"gofr.dev/pkg/gofr"
 	"gofr.dev/pkg/gofr/service"
 
-	impHandler "zop.dev/cli/zop/handler/cloud/import"
-	impService "zop.dev/cli/zop/service/cloud/import/gcp"
-	impStore "zop.dev/cli/zop/store/cloud/import/gcp"
+	impHandler "zop.dev/cli/zop/cloud/handler"
+	impService "zop.dev/cli/zop/cloud/service/gcp"
+	impStore "zop.dev/cli/zop/cloud/store/gcp"
 )
 
 const (
