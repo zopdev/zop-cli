@@ -8,19 +8,23 @@ import (
 	"net/http"
 	"net/url"
 	"time"
-	"zop.dev/cli/zop/models"
 
+	"github.com/pkg/errors"
 	"gofr.dev/pkg/gofr"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/cloudresourcemanager/v1"
 	"google.golang.org/api/iam/v1"
 	"google.golang.org/api/option"
+
+	"zop.dev/cli/zop/models"
 )
 
-const (
-	tokenURL = "https://oauth2.googleapis.com/token"
-)
+type serviceAccountConfig struct {
+	ProjectID          string
+	ServiceAccountName string
+	Roles              []string
+}
 
 func getServiceAccounts(ctx *gofr.Context, value []byte) ([]*models.ServiceAccount, error) {
 	var acc models.ServiceAccount
@@ -55,14 +59,19 @@ func generateNewServiceAccount(ctx *gofr.Context, value []byte) ([]*models.Servi
 		return nil, err
 	}
 
-	var serviceAccounts []*models.ServiceAccount
+	return getNewServiceAccounts(ctx, projects, token)
+}
+
+func getNewServiceAccounts(ctx *gofr.Context, projects []*cloudresourcemanager.Project,
+	token *oauth2.Token) ([]*models.ServiceAccount, error) {
+	var serviceAccounts = make([]*models.ServiceAccount, 0)
 
 	for _, project := range projects {
 		projectID := project.ProjectId
 		serviceAccountName := fmt.Sprintf("zop-dev-%v", time.Now().Unix())
 		config := newServiceAccountConfig(projectID, serviceAccountName)
 
-		if err = checkProjectAccess(ctx, config.ProjectID, token); err != nil {
+		if err := checkProjectAccess(ctx, config.ProjectID, token); err != nil {
 			ctx.Logger.Errorf("Project access check failed: %v", err)
 			continue
 		}
@@ -104,12 +113,6 @@ func generateNewServiceAccount(ctx *gofr.Context, value []byte) ([]*models.Servi
 	return serviceAccounts, nil
 }
 
-type serviceAccountConfig struct {
-	ProjectID          string
-	ServiceAccountName string
-	Roles              []string
-}
-
 func newServiceAccountConfig(projectID, serviceAccountName string) *serviceAccountConfig {
 	return &serviceAccountConfig{
 		ProjectID:          projectID,
@@ -132,12 +135,12 @@ func newServiceAccountConfig(projectID, serviceAccountName string) *serviceAccou
 func checkProjectAccess(ctx context.Context, projectID string, accessToken *oauth2.Token) error {
 	crmService, err := cloudresourcemanager.NewService(ctx, option.WithTokenSource(oauth2.StaticTokenSource(accessToken)))
 	if err != nil {
-		return fmt.Errorf("failed to create Cloud Resource Manager client: %v", err)
+		return errors.Wrap(err, "failed to create Cloud Resource Manager client")
 	}
 
 	_, err = crmService.Projects.Get(projectID).Do()
 	if err != nil {
-		return fmt.Errorf("project %s is not accessible: %v", projectID, err)
+		return errors.Wrap(err, fmt.Sprintf("project %s is not accessible", projectID))
 	}
 
 	return nil
@@ -146,7 +149,7 @@ func checkProjectAccess(ctx context.Context, projectID string, accessToken *oaut
 func createServiceAccount(ctx context.Context, config *serviceAccountConfig) (*iam.ServiceAccount, error) {
 	iamService, err := iam.NewService(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create IAM client: %v", err)
+		return nil, errors.Wrap(err, "failed to create IAM client")
 	}
 
 	serviceAccountEmail := fmt.Sprintf("%s@%s.iam.gserviceaccount.com",
@@ -158,7 +161,7 @@ func createServiceAccount(ctx context.Context, config *serviceAccountConfig) (*i
 			config.ProjectID, serviceAccountEmail)).Do()
 
 	if err == nil {
-		return nil, fmt.Errorf("service account %s already exists", serviceAccountEmail)
+		return nil, errors.Wrap(err, fmt.Sprintf("service account %v already exists", serviceAccountEmail))
 	}
 
 	request := &iam.CreateServiceAccountRequest{
@@ -172,7 +175,7 @@ func createServiceAccount(ctx context.Context, config *serviceAccountConfig) (*i
 	serviceAccount, err := iamService.Projects.ServiceAccounts.Create(
 		fmt.Sprintf("projects/%s", config.ProjectID), request).Do()
 	if err != nil {
-		return nil, fmt.Errorf("failed to create service account: %v", err)
+		return nil, errors.Wrap(err, "failed to create service account")
 	}
 
 	return serviceAccount, nil
@@ -181,7 +184,7 @@ func createServiceAccount(ctx context.Context, config *serviceAccountConfig) (*i
 func createServiceAccountKey(ctx context.Context, serviceAccount *iam.ServiceAccount) ([]byte, error) {
 	iamService, err := iam.NewService(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create IAM client: %v", err)
+		return nil, errors.Wrap(err, "failed to create IAM client")
 	}
 
 	key, err := iamService.Projects.ServiceAccounts.Keys.Create(
@@ -190,7 +193,7 @@ func createServiceAccountKey(ctx context.Context, serviceAccount *iam.ServiceAcc
 			PrivateKeyType: "TYPE_GOOGLE_CREDENTIALS_FILE",
 		}).Do()
 	if err != nil {
-		return nil, fmt.Errorf("failed to create service account key: %v", err)
+		return nil, errors.Wrap(err, "failed to create service account key")
 	}
 
 	return []byte(key.PrivateKeyData), nil
@@ -199,26 +202,29 @@ func createServiceAccountKey(ctx context.Context, serviceAccount *iam.ServiceAcc
 func assignRoles(ctx context.Context, config *serviceAccountConfig, serviceAccount *iam.ServiceAccount) error {
 	crmService, err := cloudresourcemanager.NewService(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to create Cloud Resource Manager client: %v", err)
+		return errors.Wrap(err, "failed to create Cloud Resource Manager client")
 	}
 
 	policy, err := crmService.Projects.GetIamPolicy(config.ProjectID,
 		&cloudresourcemanager.GetIamPolicyRequest{}).Do()
 	if err != nil {
-		return fmt.Errorf("failed to get IAM policy: %v", err)
+		return errors.Wrap(err, "failed to get IAM policy")
 	}
 
 	member := fmt.Sprintf("serviceAccount:%s", serviceAccount.Email)
 
 	for _, role := range config.Roles {
 		found := false
+
 		for _, binding := range policy.Bindings {
 			if binding.Role == role {
 				binding.Members = append(binding.Members, member)
 				found = true
+
 				break
 			}
 		}
+
 		if !found {
 			policy.Bindings = append(policy.Bindings, &cloudresourcemanager.Binding{
 				Role:    role,
@@ -230,33 +236,33 @@ func assignRoles(ctx context.Context, config *serviceAccountConfig, serviceAccou
 	_, err = crmService.Projects.SetIamPolicy(config.ProjectID,
 		&cloudresourcemanager.SetIamPolicyRequest{Policy: policy}).Do()
 	if err != nil {
-		return fmt.Errorf("failed to set IAM policy: %v", err)
+		return errors.Wrap(err, "failed to set IAM policy")
 	}
 
 	return nil
 }
 
 func refreshAccessToken(ctx *gofr.Context, clientID, clientSecret, refreshToken string) (*oauth2.Token, error) {
-	// Prepare the token URL and data
 	data := url.Values{
-		"client_id":     {clientID},
-		"client_secret": {clientSecret},
-		"refresh_token": {refreshToken},
-		"grant_type":    {"refresh_token"},
+		"client_id":     []string{clientID},
+		"client_secret": []string{clientSecret},
+		"refresh_token": []string{refreshToken},
+		"grant_type":    []string{"refresh_token"},
 	}
 
-	// Make the request to get the new access token
-	resp, err := http.PostForm(tokenURL, data)
-	if err != nil {
-		return nil, fmt.Errorf("failed to refresh token: %v", err)
+	resp, err := ctx.GetHTTPService("gcloud-service").
+		Post(ctx, "token", nil, []byte(data.Encode()))
+	if err != nil || resp.StatusCode != http.StatusOK {
+		return nil, errors.Wrap(err, "failed to refresh token")
 	}
+
 	defer resp.Body.Close()
 
-	// Parse the response and extract the new token
 	var newToken oauth2.Token
+
 	err = json.NewDecoder(resp.Body).Decode(&newToken)
 	if err != nil {
-		return nil, fmt.Errorf("failed to decode token response: %v", err)
+		return nil, errors.Wrap(err, "failed to decode token response")
 	}
 
 	return &newToken, nil

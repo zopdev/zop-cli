@@ -1,11 +1,15 @@
-package _import
+package export
 
 import (
 	"errors"
-	"go.uber.org/mock/gomock"
-
-	"gofr.dev/pkg/gofr"
 	"testing"
+
+	"go.uber.org/mock/gomock"
+	"gofr.dev/pkg/gofr"
+)
+
+var (
+	errTest = errors.New("import error")
 )
 
 func TestImport_Success(t *testing.T) {
@@ -17,14 +21,14 @@ func TestImport_Success(t *testing.T) {
 
 	handler := New(mockAccountImporter)
 	ctx := &gofr.Context{}
-
 	result, err := handler.Import(ctx)
 
 	if err != nil {
-		t.Fatalf("expected no error, got %v", err)
+		t.Errorf("expected no error, got %v", err)
 	}
-	if result != "Successfully Imported!" {
-		t.Fatalf("expected 'Successfully Imported!', got %v", result)
+
+	if result != successMessage {
+		t.Errorf("expected 'Successfully Imported!', got %v", result)
 	}
 }
 
@@ -33,7 +37,7 @@ func TestImport_Failure(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockAccountImporter := NewMockAccountImporter(ctrl)
-	mockAccountImporter.EXPECT().PostAccounts(gomock.Any()).Return(errors.New("import error"))
+	mockAccountImporter.EXPECT().PostAccounts(gomock.Any()).Return(errTest)
 
 	handler := New(mockAccountImporter)
 	ctx := &gofr.Context{}
@@ -41,12 +45,14 @@ func TestImport_Failure(t *testing.T) {
 	result, err := handler.Import(ctx)
 
 	if err == nil {
-		t.Fatalf("expected error, got nil")
+		t.Errorf("expected error, got nil")
 	}
+
 	if result != nil {
-		t.Fatalf("expected nil result, got %v", result)
+		t.Errorf("expected nil result, got %v", result)
 	}
-	if err.Error() != "import error" {
-		t.Fatalf("expected 'import error', got %v", err.Error())
+
+	if errors.Is(err, errTest) {
+		t.Errorf("expected 'import error', got %v", err.Error())
 	}
 }

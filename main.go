@@ -8,16 +8,24 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 	"gofr.dev/pkg/gofr"
+	"gofr.dev/pkg/gofr/service"
 
 	impHandler "zop.dev/cli/zop/handler/cloud/import"
 	impService "zop.dev/cli/zop/service/cloud/import/gcp"
 	impStore "zop.dev/cli/zop/store/cloud/import/gcp"
 )
 
+const (
+	//nolint:gosec //This is a tokenURL for google oauth2
+	tokenURL = "https://oauth2.googleapis.com"
+)
+
 func main() {
 	app := gofr.NewCMD()
 
 	app.AddHTTPService("api-service", app.Config.Get("ZOP_API_URL"))
+	app.AddHTTPService("gcloud-service", tokenURL,
+		&service.DefaultHeaders{Headers: map[string]string{"Content-Type": "application/x-www-form-urlencoded"}})
 
 	homeDir, err := os.UserHomeDir()
 	if err != nil {

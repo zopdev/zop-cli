@@ -7,7 +7,7 @@
 //
 
 // Package _import is a generated GoMock package.
-package _import
+package export
 
 import (
 	reflect "reflect"

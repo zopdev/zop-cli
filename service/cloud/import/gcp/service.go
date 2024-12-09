@@ -4,9 +4,10 @@ package gcp
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+
 	"gofr.dev/pkg/gofr"
 	"gofr.dev/pkg/gofr/cmd/terminal"
-
 	"zop.dev/cli/zop/models"
 	cloudImporter "zop.dev/cli/zop/service/cloud/import"
 )
@@ -28,6 +29,15 @@ func New(store cloudImporter.AccountStore) *Service {
 	}
 }
 
+type ErrAPIService struct {
+	StatusCode int
+	Message    string
+}
+
+func (e *ErrAPIService) Error() string {
+	return fmt.Sprintf("error from api service: %s, status code: %d", e.Message, e.StatusCode)
+}
+
 // PostAccounts posts the GCP service accounts to the api service.
 // It fetches the accounts from the store layer and posts them to the api service.
 // If an account is of type user account, it generates a token and then creates a service account.
@@ -44,6 +54,8 @@ func (s *Service) PostAccounts(ctx *gofr.Context) error {
 	for _, acc := range accounts {
 		svAccs, er := getServiceAccounts(ctx, acc.Value)
 		if er != nil {
+			ctx.Logger.Errorf("error getting service accounts: %v", er)
+
 			continue
 		}
 
@@ -54,7 +66,7 @@ func (s *Service) PostAccounts(ctx *gofr.Context) error {
 				Credentials: svcAcc,
 			})
 			if er != nil {
-				ctx.Logger.Errorf("error marshalling account creds: %v", er)
+				ctx.Logger.Errorf("error marshaling account creds: %v", er)
 				continue
 			}
 
@@ -66,10 +78,13 @@ func (s *Service) PostAccounts(ctx *gofr.Context) error {
 				continue
 			}
 
-			if resp.StatusCode != 201 && resp.StatusCode != 409 {
+			if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusConflict {
 				ctx.Logger.Errorf("error posting account: %v", resp.Body)
-				continue
+
+				return &ErrAPIService{StatusCode: resp.StatusCode, Message: "could not connect to the zop-api service"}
 			}
+
+			resp.Body.Close()
 		}
 	}
 

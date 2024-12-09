@@ -1,11 +1,13 @@
-// Package _import is used to import data from external sources
+// Package export is used to import data from external sources
 // this package has an Import(ctx *gofr.Context) method that is used to import all
 // local cloud accounts to the zop api to store and validate those cloud accounts.
-package _import
+package export
 
 import (
 	"gofr.dev/pkg/gofr"
 )
+
+const successMessage = "Successfully Imported!"
 
 type Handler struct {
 	accountService AccountImporter
@@ -24,5 +26,5 @@ func (h *Handler) Import(ctx *gofr.Context) (any, error) {
 		return nil, err
 	}
 
-	return "Successfully Imported!", nil
+	return successMessage, nil
 }
