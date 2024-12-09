@@ -4,6 +4,8 @@
 package handler
 
 import (
+	"fmt"
+
 	"gofr.dev/pkg/gofr"
 )
 
@@ -11,11 +13,13 @@ const successMessage = "Successfully Imported!"
 
 type Handler struct {
 	accountService AccountImporter
+	accountGetter  AccountGetter
 }
 
-func New(getter AccountImporter) *Handler {
+func New(accountService AccountImporter, accountGetter AccountGetter) *Handler {
 	return &Handler{
-		accountService: getter,
+		accountService: accountService,
+		accountGetter:  accountGetter,
 	}
 }
 
@@ -23,10 +27,30 @@ func New(getter AccountImporter) *Handler {
 func (h *Handler) Import(ctx *gofr.Context) (any, error) {
 	err := h.accountService.PostAccounts(ctx)
 	if err != nil {
-		ctx.Logger.Errorf("error importing accounts to zop api: %v", err)
-
 		return nil, err
 	}
 
 	return successMessage, nil
+}
+
+func (h *Handler) List(ctx *gofr.Context) (any, error) {
+	accounts, err := h.accountGetter.GetAccounts(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(accounts) == 0 {
+		return "No accounts found", nil
+	}
+
+	header := fmt.Sprintf("%-20s %-20s %-20s %-20s %-20s\n",
+		"Name", "Provider", "ProviderID", "UpdateAt", "CreatedAt")
+	rows := ""
+
+	for _, account := range accounts {
+		rows += fmt.Sprintf("%-20s %-20s %-20s %-20s %-20s\n",
+			account.Name[:17]+"...", account.Provider, account.ProviderID, account.UpdatedAt, account.CreatedAt)
+	}
+
+	return header + rows, nil
 }

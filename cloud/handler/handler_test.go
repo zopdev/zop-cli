@@ -21,7 +21,7 @@ func TestImport_Success(t *testing.T) {
 	mockAccountImporter := NewMockAccountImporter(ctrl)
 	mockAccountImporter.EXPECT().PostAccounts(gomock.Any()).Return(nil)
 
-	handler := New(mockAccountImporter)
+	handler := New(mockAccountImporter, nil)
 	ctx := &gofr.Context{}
 	result, err := handler.Import(ctx)
 
@@ -41,8 +41,8 @@ func TestImport_Failure(t *testing.T) {
 	mockAccountImporter := NewMockAccountImporter(ctrl)
 	mockAccountImporter.EXPECT().PostAccounts(gomock.Any()).Return(errTest)
 
-	handler := New(mockAccountImporter)
 	ctx := &gofr.Context{Container: &container.Container{Logger: logging.NewMockLogger(logging.INFO)}}
+	handler := New(mockAccountImporter, nil)
 
 	result, err := handler.Import(ctx)
 

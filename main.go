@@ -12,6 +12,7 @@ import (
 
 	impHandler "zop.dev/cli/zop/cloud/handler"
 	impService "zop.dev/cli/zop/cloud/service/gcp"
+	listSvc "zop.dev/cli/zop/cloud/service/list"
 	impStore "zop.dev/cli/zop/cloud/store/gcp"
 )
 
@@ -41,11 +42,13 @@ func main() {
 	}
 	defer db.Close()
 
-	accountStore := impStore.New(db)
-	accountSvc := impService.New(accountStore)
-	importHandler := impHandler.New(accountSvc)
+	aStore := impStore.New(db)
+	aSvc := impService.New(aStore)
+	lSvc := listSvc.New()
+	h := impHandler.New(aSvc, lSvc)
 
-	app.SubCommand("cloud import", importHandler.Import)
+	app.SubCommand("cloud import", h.Import)
+	app.SubCommand("cloud list", h.List)
 
 	app.Run()
 }
