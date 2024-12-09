@@ -52,7 +52,7 @@ func TestImport_Failure(t *testing.T) {
 		t.Errorf("expected nil result, got %v", result)
 	}
 
-	if errors.Is(err, errTest) {
+	if !errors.Is(err, errTest) {
 		t.Errorf("expected 'import error', got %v", err.Error())
 	}
 }
