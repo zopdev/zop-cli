@@ -15,7 +15,7 @@ func New() *Service {
 	return &Service{}
 }
 
-func (s *Service) AddApplication(ctx *gofr.Context, name string) error {
+func (*Service) AddApplication(ctx *gofr.Context, name string) error {
 	var (
 		envs  []Environment
 		input string
@@ -27,21 +27,23 @@ func (s *Service) AddApplication(ctx *gofr.Context, name string) error {
 
 	ctx.Out.Print("Do you wish to add environments to the application? (y/n) ")
 
-	fmt.Scanf("%s", &input)
+	_, _ = fmt.Scanf("%s", &input)
 
 	for {
-		if input == "y" {
-			ctx.Out.Println("Enter environment name:")
-			fmt.Scanf("%s", &input)
-
-			envs = append(envs, Environment{Name: input, Order: order})
-			order++
-		} else {
+		if input != "y" {
 			break
 		}
 
+		ctx.Out.Print("Enter environment name: ")
+
+		_, _ = fmt.Scanf("%s", &input)
+		envs = append(envs, Environment{Name: input, Order: order})
+		order++
+
 		ctx.Out.Print("Do you wish to add more? (y/n) ")
-		fmt.Scanf("%s", &input)
+
+		_, _ = fmt.Scanf("%s", &input)
+
 		if input == "n" {
 			break
 		}

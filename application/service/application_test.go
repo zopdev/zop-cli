@@ -4,16 +4,17 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"io"
+	"net/http"
+	"os"
+	"testing"
+
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	"gofr.dev/pkg/gofr"
 	"gofr.dev/pkg/gofr/cmd/terminal"
 	"gofr.dev/pkg/gofr/container"
 	"gofr.dev/pkg/gofr/service"
-	"io"
-	"net/http"
-	"os"
-	"testing"
 )
 
 var errAPICall = errors.New("error in API call")
@@ -22,7 +23,7 @@ func Test_AddApplication(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockCont, mocks := container.NewMockContainer(t, func(c *container.Container, ctrl *gomock.Controller) any {
+	mockCont, mocks := container.NewMockContainer(t, func(_ *container.Container, ctrl *gomock.Controller) any {
 		return service.NewMockHTTP(ctrl)
 	})
 	mockCont.Services["api-service"] = mocks.HTTPService
@@ -79,7 +80,7 @@ func Test_AddApplication_WithEnvs(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockCont, mocks := container.NewMockContainer(t, func(c *container.Container, ctrl *gomock.Controller) any {
+	mockCont, mocks := container.NewMockContainer(t, func(_ *container.Container, ctrl *gomock.Controller) any {
 		return service.NewMockHTTP(ctrl)
 	})
 
@@ -102,7 +103,7 @@ func Test_AddApplication_WithEnvs(t *testing.T) {
 			},
 			mockCalls: []*gomock.Call{
 				mocks.HTTPService.EXPECT().PostWithHeaders(ctx, "application", nil, gomock.Any(), nil).
-					DoAndReturn(func(ctx *gofr.Context, endpoint string, headers, body, query interface{}) (*http.Response, error) {
+					DoAndReturn(func(body any) (*http.Response, error) {
 						var app Application
 						_ = json.Unmarshal(body.([]byte), &app)
 						require.Equal(t, "test", app.Name)
@@ -121,7 +122,7 @@ func Test_AddApplication_WithEnvs(t *testing.T) {
 			expectedEnvs: []Environment{},
 			mockCalls: []*gomock.Call{
 				mocks.HTTPService.EXPECT().PostWithHeaders(ctx, "application", nil, gomock.Any(), nil).
-					DoAndReturn(func(ctx *gofr.Context, endpoint string, headers, body, query interface{}) (*http.Response, error) {
+					DoAndReturn(func(body any) (*http.Response, error) {
 						var app Application
 						_ = json.Unmarshal(body.([]byte), &app)
 						require.Equal(t, "test", app.Name)
@@ -139,7 +140,7 @@ func Test_AddApplication_WithEnvs(t *testing.T) {
 
 			// Mock user input
 			r, w, _ := os.Pipe()
-			w.Write([]byte(tt.userInput))
+			_, _ = w.WriteString(tt.userInput)
 
 			oldStdin := os.Stdin
 			os.Stdin = r

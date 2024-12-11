@@ -44,7 +44,7 @@ func main() {
 	}
 	defer db.Close()
 
-	accStore := impStore.New()
+	accStore := impStore.New(db)
 	accSvc := impService.New(accStore)
 	lSvc := listSvc.New()
 	h := impHandler.New(accSvc, lSvc)

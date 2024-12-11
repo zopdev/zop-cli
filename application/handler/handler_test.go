@@ -2,14 +2,16 @@ package handler
 
 import (
 	"errors"
-	"go.uber.org/mock/gomock"
-	"gofr.dev/pkg/gofr/cmd"
+	"testing"
 
 	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
 	"gofr.dev/pkg/gofr"
+	"gofr.dev/pkg/gofr/cmd"
 	"gofr.dev/pkg/gofr/container"
-	"testing"
 )
+
+var errAPICall = errors.New("error in API call")
 
 func TestHandler_Add(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -43,10 +45,10 @@ func TestHandler_Add(t *testing.T) {
 			name:    "error adding application",
 			appName: "test-app",
 			mockCalls: []*gomock.Call{
-				mockAppAdder.EXPECT().AddApplication(gomock.Any(), "test-app").Return(errors.New("internal error")),
+				mockAppAdder.EXPECT().AddApplication(gomock.Any(), "test-app").Return(errAPICall),
 			},
 			expected: nil,
-			expErr:   errors.New("internal error"),
+			expErr:   errAPICall,
 		},
 	}
 

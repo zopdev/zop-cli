@@ -3,10 +3,11 @@ package service
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/stretchr/testify/require"
 	"io"
 	"net/http"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetAPIError(t *testing.T) {
@@ -84,11 +85,11 @@ type MockErrorResponse struct {
 
 type errorReader struct{}
 
-func (e *errorReader) Read(p []byte) (n int, err error) {
+func (*errorReader) Read(_ []byte) (n int, err error) {
 	return 0, io.ErrUnexpectedEOF
 }
 
-func (e *errorReader) Close() error {
+func (*errorReader) Close() error {
 	return nil
 }
 
