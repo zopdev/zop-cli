@@ -6,10 +6,12 @@ import (
 	"os"
 	"path/filepath"
 
-	_ "github.com/mattn/go-sqlite3"
 	"gofr.dev/pkg/gofr"
 	"gofr.dev/pkg/gofr/service"
+	_ "modernc.org/sqlite"
 
+	applicationHandler "zop.dev/cli/zop/application/handler"
+	applicationSvc "zop.dev/cli/zop/application/service"
 	impHandler "zop.dev/cli/zop/cloud/handler"
 	impService "zop.dev/cli/zop/cloud/service/gcp"
 	listSvc "zop.dev/cli/zop/cloud/service/list"
@@ -42,13 +44,19 @@ func main() {
 	}
 	defer db.Close()
 
-	aStore := impStore.New(db)
-	aSvc := impService.New(aStore)
+	accStore := impStore.New()
+	accSvc := impService.New(accStore)
 	lSvc := listSvc.New()
-	h := impHandler.New(aSvc, lSvc)
+	h := impHandler.New(accSvc, lSvc)
 
 	app.SubCommand("cloud import", h.Import)
 	app.SubCommand("cloud list", h.List)
+	app.SubCommand("cloud select", h.Set)
+
+	appSvc := applicationSvc.New()
+	appH := applicationHandler.New(appSvc)
+
+	app.SubCommand("application add", appH.Add)
 
 	app.Run()
 }
