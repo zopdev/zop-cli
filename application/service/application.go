@@ -53,7 +53,9 @@ func (*Service) AddApplication(ctx *gofr.Context, name string) error {
 	app.Envs = envs
 	body, _ := json.Marshal(app)
 
-	resp, err := api.PostWithHeaders(ctx, "application", nil, body, nil)
+	resp, err := api.PostWithHeaders(ctx, "applications", nil, body, map[string]string{
+		"Content-Type": "application/json",
+	})
 	if err != nil {
 		return err
 	}
