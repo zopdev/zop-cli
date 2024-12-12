@@ -16,6 +16,8 @@ import (
 	impService "zop.dev/cli/zop/cloud/service/gcp"
 	listSvc "zop.dev/cli/zop/cloud/service/list"
 	impStore "zop.dev/cli/zop/cloud/store/gcp"
+	envHandler "zop.dev/cli/zop/environment/handler"
+	envService "zop.dev/cli/zop/environment/service"
 )
 
 const (
@@ -57,6 +59,12 @@ func main() {
 
 	app.SubCommand("application add", appH.Add)
 	app.SubCommand("application list", appH.List)
+
+	// Environment
+	envSvc := envService.New(appSvc)
+	envH := envHandler.New(envSvc)
+
+	app.SubCommand("environment add", envH.AddEnvironment)
 
 	app.Run()
 }
