@@ -103,7 +103,7 @@ func Test_AddApplication_WithEnvs(t *testing.T) {
 			},
 			mockCalls: []*gomock.Call{
 				mocks.HTTPService.EXPECT().PostWithHeaders(ctx, "application", nil, gomock.Any(), nil).
-					DoAndReturn(func(body any) (*http.Response, error) {
+					DoAndReturn(func(_ *gofr.Context, _ string, _, body, _ interface{}) (*http.Response, error) {
 						var app Application
 						_ = json.Unmarshal(body.([]byte), &app)
 						require.Equal(t, "test", app.Name)
@@ -122,7 +122,7 @@ func Test_AddApplication_WithEnvs(t *testing.T) {
 			expectedEnvs: []Environment{},
 			mockCalls: []*gomock.Call{
 				mocks.HTTPService.EXPECT().PostWithHeaders(ctx, "application", nil, gomock.Any(), nil).
-					DoAndReturn(func(body any) (*http.Response, error) {
+					DoAndReturn(func(_ *gofr.Context, _ string, _, body, _ interface{}) (*http.Response, error) {
 						var app Application
 						_ = json.Unmarshal(body.([]byte), &app)
 						require.Equal(t, "test", app.Name)

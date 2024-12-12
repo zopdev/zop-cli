@@ -51,7 +51,6 @@ func main() {
 
 	app.SubCommand("cloud import", h.Import)
 	app.SubCommand("cloud list", h.List)
-	app.SubCommand("cloud select", h.Set)
 
 	appSvc := applicationSvc.New()
 	appH := applicationHandler.New(appSvc)
