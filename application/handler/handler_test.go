@@ -95,7 +95,9 @@ func TestHandler_List(t *testing.T) {
 							[]svc.Environment{{"dev", 1, nil}, {"prod", 2, nil}}},
 					}, nil),
 			},
-			expected: "Applications and their environments:\napp1 env1 > env2 \napp2 dev > prod \n",
+			expected: "Applications and their environments:\n\n1.\x1b[38;5;6m app1 " +
+				"\n\t\x1b[0m\x1b[38;5;2menv1 > env2 \n\x1b[0m2.\x1b[38;5;6m app2 " +
+				"\n\t\x1b[0m\x1b[38;5;2mdev > prod \n\x1b[0m",
 		},
 		{
 			name: "failure",

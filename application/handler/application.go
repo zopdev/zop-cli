@@ -3,6 +3,7 @@ package handler
 import (
 	"errors"
 	"fmt"
+	"gofr.dev/pkg/gofr/cmd/terminal"
 	"sort"
 	"strings"
 
@@ -43,11 +44,14 @@ func (h *Handler) List(ctx *gofr.Context) (any, error) {
 		return nil, err
 	}
 
-	ctx.Out.Println("Applications and their environments:")
+	ctx.Out.Println("Applications and their environments:\n")
 
 	s := strings.Builder{}
-	for _, app := range apps {
-		s.WriteString(fmt.Sprintf("%s ", app.Name))
+	for i, app := range apps {
+		ctx.Out.Printf("%d.", i+1)
+		ctx.Out.SetColor(terminal.Cyan)
+		ctx.Out.Printf(" %s \n\t", app.Name)
+		ctx.Out.ResetColor()
 
 		sort.Slice(app.Envs, func(i, j int) bool { return app.Envs[i].Order < app.Envs[j].Order })
 
@@ -55,9 +59,11 @@ func (h *Handler) List(ctx *gofr.Context) (any, error) {
 			s.WriteString(fmt.Sprintf("%s > ", env.Name))
 		}
 
+		ctx.Out.SetColor(terminal.Green)
 		ctx.Out.Println(s.String()[:s.Len()-2])
+		ctx.Out.ResetColor()
 		s.Reset()
 	}
 
-	return nil, nil
+	return "\n", nil
 }
