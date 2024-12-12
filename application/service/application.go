@@ -3,6 +3,7 @@ package service
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
 	"gofr.dev/pkg/gofr"
@@ -64,4 +65,27 @@ func (*Service) AddApplication(ctx *gofr.Context, name string) error {
 	}
 
 	return nil
+}
+
+func (*Service) GetApplications(ctx *gofr.Context) ([]Application, error) {
+	api := ctx.GetHTTPService("api-service")
+
+	reps, err := api.Get(ctx, "applications", nil)
+	if err != nil {
+		return nil, err
+	}
+	defer reps.Body.Close()
+
+	var apps struct {
+		Data []Application `json:"data"`
+	}
+
+	body, _ := io.ReadAll(reps.Body)
+
+	err = json.Unmarshal(body, &apps)
+	if err != nil {
+		return nil, err
+	}
+
+	return apps.Data, nil
 }

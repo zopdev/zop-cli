@@ -48,6 +48,7 @@ type Environment struct {
 }
 
 type Application struct {
+	ID   int           `json:"id"`
 	Name string        `json:"name"`
 	Envs []Environment `json:"environments,omitempty"`
 }

@@ -56,6 +56,7 @@ func main() {
 	appH := applicationHandler.New(appSvc)
 
 	app.SubCommand("application add", appH.Add)
+	app.SubCommand("application list", appH.List)
 
 	app.Run()
 }
