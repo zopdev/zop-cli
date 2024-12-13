@@ -9,7 +9,10 @@ import (
 	"gofr.dev/pkg/gofr"
 )
 
-const successMessage = "Successfully Imported!"
+const (
+	successMessage = "Successfully Imported!"
+	maxNameLength  = 20
+)
 
 type Handler struct {
 	accountService AccountImporter
@@ -49,7 +52,7 @@ func (h *Handler) List(ctx *gofr.Context) (any, error) {
 	rows := ""
 
 	for _, account := range accounts {
-		if len(account.Name) > 20 {
+		if len(account.Name) > maxNameLength {
 			account.Name = account.Name[:17] + "..."
 		}
 
