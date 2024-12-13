@@ -9,7 +9,10 @@ import (
 	"gofr.dev/pkg/gofr"
 )
 
-const successMessage = "Successfully Imported!"
+const (
+	successMessage = "Successfully Imported!"
+	maxNameLength  = 20
+)
 
 type Handler struct {
 	accountService AccountImporter
@@ -33,6 +36,7 @@ func (h *Handler) Import(ctx *gofr.Context) (any, error) {
 	return successMessage, nil
 }
 
+// List is a handler for listing all cloud accounts.
 func (h *Handler) List(ctx *gofr.Context) (any, error) {
 	accounts, err := h.accountGetter.GetAccounts(ctx)
 	if err != nil {
@@ -48,8 +52,12 @@ func (h *Handler) List(ctx *gofr.Context) (any, error) {
 	rows := ""
 
 	for _, account := range accounts {
+		if len(account.Name) > maxNameLength {
+			account.Name = account.Name[:17] + "..."
+		}
+
 		rows += fmt.Sprintf("%-20s %-20s %-20s %-20s %-20s\n",
-			account.Name[:17]+"...", account.Provider, account.ProviderID, account.UpdatedAt, account.CreatedAt)
+			account.Name, account.Provider, account.ProviderID, account.UpdatedAt, account.CreatedAt)
 	}
 
 	return header + rows, nil
