@@ -1,21 +1,38 @@
+// Package service provides functionalities for managing applications and their environments.
+// It includes methods for adding a new application and listing existing applications.
 package service
 
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
 	"gofr.dev/pkg/gofr"
 )
 
-type Service struct {
-}
+// Service provides methods for managing applications.
+type Service struct{}
 
+// New creates a new instance of Service.
+//
+// Returns:
+//
+//	A pointer to a Service instance.
 func New() *Service {
 	return &Service{}
 }
 
-func (*Service) AddApplication(ctx *gofr.Context, name string) error {
+// Add adds a new application and optionally its environments.
+//
+// Parameters:
+//   - ctx: The application context containing dependencies and utilities.
+//   - name: The name of the application to be added.
+//
+// Returns:
+//
+//	An error if the application or environments could not be added.
+func (*Service) Add(ctx *gofr.Context, name string) error {
 	var (
 		envs  []Environment
 		input string
@@ -52,7 +69,9 @@ func (*Service) AddApplication(ctx *gofr.Context, name string) error {
 	app.Envs = envs
 	body, _ := json.Marshal(app)
 
-	resp, err := api.PostWithHeaders(ctx, "application", nil, body, nil)
+	resp, err := api.PostWithHeaders(ctx, "applications", nil, body, map[string]string{
+		"Content-Type": "application/json",
+	})
 	if err != nil {
 		return err
 	}
@@ -64,4 +83,38 @@ func (*Service) AddApplication(ctx *gofr.Context, name string) error {
 	}
 
 	return nil
+}
+
+// List retrieves all applications and their environments.
+//
+// Parameters:
+//   - ctx: The application context containing dependencies and utilities.
+//
+// Returns:
+//
+//	A slice of applications and an error, if any.
+func (*Service) List(ctx *gofr.Context) ([]Application, error) {
+	api := ctx.GetHTTPService("api-service")
+
+	reps, err := api.Get(ctx, "applications", nil)
+	if err != nil {
+		return nil, err
+	}
+	defer reps.Body.Close()
+
+	var apps struct {
+		Data []Application `json:"data"`
+	}
+
+	body, _ := io.ReadAll(reps.Body)
+
+	err = json.Unmarshal(body, &apps)
+	if err != nil {
+		return nil, &ErrAPIService{
+			StatusCode: http.StatusInternalServerError,
+			Message:    "Internal Server Error",
+		}
+	}
+
+	return apps.Data, nil
 }

@@ -5,6 +5,7 @@ go 1.22.8
 require (
 	github.com/mattn/go-sqlite3 v1.14.24
 	github.com/pkg/errors v0.9.1
+	github.com/stretchr/testify v1.10.0
 	go.uber.org/mock v0.5.0
 	gofr.dev v1.28.0
 	golang.org/x/oauth2 v0.24.0
@@ -62,7 +63,6 @@ require (
 	github.com/redis/go-redis/v9 v9.7.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/segmentio/kafka-go v0.4.47 // indirect
-	github.com/stretchr/testify v1.10.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.54.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace v0.56.0 // indirect

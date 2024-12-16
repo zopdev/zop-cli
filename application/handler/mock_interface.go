@@ -14,42 +14,58 @@ import (
 
 	gomock "go.uber.org/mock/gomock"
 	gofr "gofr.dev/pkg/gofr"
+	service "zop.dev/cli/zop/application/service"
 )
 
-// MockApplicationAdder is a mock of ApplicationAdder interface.
-type MockApplicationAdder struct {
+// MockApplicationService is a mock of ApplicationService interface.
+type MockApplicationService struct {
 	ctrl     *gomock.Controller
-	recorder *MockApplicationAdderMockRecorder
+	recorder *MockApplicationServiceMockRecorder
 	isgomock struct{}
 }
 
-// MockApplicationAdderMockRecorder is the mock recorder for MockApplicationAdder.
-type MockApplicationAdderMockRecorder struct {
-	mock *MockApplicationAdder
+// MockApplicationServiceMockRecorder is the mock recorder for MockApplicationService.
+type MockApplicationServiceMockRecorder struct {
+	mock *MockApplicationService
 }
 
-// NewMockApplicationAdder creates a new mock instance.
-func NewMockApplicationAdder(ctrl *gomock.Controller) *MockApplicationAdder {
-	mock := &MockApplicationAdder{ctrl: ctrl}
-	mock.recorder = &MockApplicationAdderMockRecorder{mock}
+// NewMockApplicationService creates a new mock instance.
+func NewMockApplicationService(ctrl *gomock.Controller) *MockApplicationService {
+	mock := &MockApplicationService{ctrl: ctrl}
+	mock.recorder = &MockApplicationServiceMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockApplicationAdder) EXPECT() *MockApplicationAdderMockRecorder {
+func (m *MockApplicationService) EXPECT() *MockApplicationServiceMockRecorder {
 	return m.recorder
 }
 
 // AddApplication mocks base method.
-func (m *MockApplicationAdder) AddApplication(ctx *gofr.Context, name string) error {
+func (m *MockApplicationService) Add(ctx *gofr.Context, name string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddApplication", ctx, name)
+	ret := m.ctrl.Call(m, "Add", ctx, name)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AddApplication indicates an expected call of AddApplication.
-func (mr *MockApplicationAdderMockRecorder) AddApplication(ctx, name any) *gomock.Call {
+func (mr *MockApplicationServiceMockRecorder) AddApplication(ctx, name any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddApplication", reflect.TypeOf((*MockApplicationAdder)(nil).AddApplication), ctx, name)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Add", reflect.TypeOf((*MockApplicationService)(nil).Add), ctx, name)
+}
+
+// GetApplications mocks base method.
+func (m *MockApplicationService) List(ctx *gofr.Context) ([]service.Application, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "List", ctx)
+	ret0, _ := ret[0].([]service.Application)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetApplications indicates an expected call of GetApplications.
+func (mr *MockApplicationServiceMockRecorder) GetApplications(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockApplicationService)(nil).List), ctx)
 }
