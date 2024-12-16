@@ -42,9 +42,9 @@ func (m *MockApplicationService) EXPECT() *MockApplicationServiceMockRecorder {
 }
 
 // AddApplication mocks base method.
-func (m *MockApplicationService) AddApplication(ctx *gofr.Context, name string) error {
+func (m *MockApplicationService) Add(ctx *gofr.Context, name string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddApplication", ctx, name)
+	ret := m.ctrl.Call(m, "Add", ctx, name)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
@@ -52,13 +52,13 @@ func (m *MockApplicationService) AddApplication(ctx *gofr.Context, name string) 
 // AddApplication indicates an expected call of AddApplication.
 func (mr *MockApplicationServiceMockRecorder) AddApplication(ctx, name any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddApplication", reflect.TypeOf((*MockApplicationService)(nil).AddApplication), ctx, name)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Add", reflect.TypeOf((*MockApplicationService)(nil).Add), ctx, name)
 }
 
 // GetApplications mocks base method.
-func (m *MockApplicationService) GetApplications(ctx *gofr.Context) ([]service.Application, error) {
+func (m *MockApplicationService) List(ctx *gofr.Context) ([]service.Application, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetApplications", ctx)
+	ret := m.ctrl.Call(m, "List", ctx)
 	ret0, _ := ret[0].([]service.Application)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
@@ -67,5 +67,5 @@ func (m *MockApplicationService) GetApplications(ctx *gofr.Context) ([]service.A
 // GetApplications indicates an expected call of GetApplications.
 func (mr *MockApplicationServiceMockRecorder) GetApplications(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetApplications", reflect.TypeOf((*MockApplicationService)(nil).GetApplications), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockApplicationService)(nil).List), ctx)
 }
