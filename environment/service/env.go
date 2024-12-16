@@ -25,7 +25,7 @@ type Service struct {
 
 func New(appGet ApplicationGetter) *Service { return &Service{appGet: appGet} }
 
-func (s *Service) AddEnvironments(ctx *gofr.Context) (int, error) {
+func (s *Service) Add(ctx *gofr.Context) (int, error) {
 	app, err := s.getSelectedApplication(ctx)
 	if err != nil {
 		return 0, err

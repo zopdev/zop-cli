@@ -3,11 +3,11 @@ package handler
 import (
 	"errors"
 	"fmt"
-	"gofr.dev/pkg/gofr/cmd/terminal"
 	"sort"
 	"strings"
 
 	"gofr.dev/pkg/gofr"
+	"gofr.dev/pkg/gofr/cmd/terminal"
 )
 
 var (
@@ -47,6 +47,7 @@ func (h *Handler) List(ctx *gofr.Context) (any, error) {
 	ctx.Out.Println("Applications and their environments:\n")
 
 	s := strings.Builder{}
+
 	for i, app := range apps {
 		ctx.Out.Printf("%d.", i+1)
 		ctx.Out.SetColor(terminal.Cyan)
