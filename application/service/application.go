@@ -86,7 +86,10 @@ func (*Service) List(ctx *gofr.Context) ([]Application, error) {
 
 	err = json.Unmarshal(body, &apps)
 	if err != nil {
-		return nil, err
+		return nil, &ErrAPIService{
+			StatusCode: http.StatusInternalServerError,
+			Message:    "Internal Server Error",
+		}
 	}
 
 	return apps.Data, nil
