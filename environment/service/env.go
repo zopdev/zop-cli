@@ -13,10 +13,11 @@ import (
 )
 
 var (
-	ErrUnableToRenderApps    = errors.New("unable to render the list of applications")
-	ErrConnectingZopAPI      = errors.New("unable to connect to Zop API")
-	ErrorAddingEnv           = errors.New("unable to add environment")
-	ErrNoApplicationSelected = errors.New("no application selected")
+	ErrUnableToRenderApps     = errors.New("unable to render the list of applications")
+	ErrConnectingZopAPI       = errors.New("unable to connect to Zop API")
+	ErrorAddingEnv            = errors.New("unable to add environment")
+	ErrNoApplicationSelected  = errors.New("no application selected")
+	ErrorFetchingEnvironments = errors.New("unable to fetch environments")
 )
 
 type Service struct {
@@ -25,7 +26,7 @@ type Service struct {
 
 func New(appGet ApplicationGetter) *Service { return &Service{appGet: appGet} }
 
-func (s *Service) AddEnvironments(ctx *gofr.Context) (int, error) {
+func (s *Service) Add(ctx *gofr.Context) (int, error) {
 	app, err := s.getSelectedApplication(ctx)
 	if err != nil {
 		return 0, err
@@ -61,6 +62,34 @@ func (s *Service) AddEnvironments(ctx *gofr.Context) (int, error) {
 	}
 
 	return level, nil
+}
+
+func (s *Service) List(ctx *gofr.Context) ([]Environment, error) {
+	app, err := s.getSelectedApplication(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := ctx.GetHTTPService("api-service").
+		Get(ctx, fmt.Sprintf("applications/%d/environments", app.id), nil)
+	if err != nil {
+		ctx.Logger.Errorf("unable to connect to Zop API! %v", err)
+
+		return nil, ErrConnectingZopAPI
+	}
+
+	var data struct {
+		Envs []Environment `json:"data"`
+	}
+
+	err = getResponse(resp, &data)
+	if err != nil {
+		ctx.Logger.Errorf("unable to fetch environments, could not unmarshall response %v", err)
+
+		return nil, ErrorFetchingEnvironments
+	}
+
+	return data.Envs, nil
 }
 
 func (s *Service) getSelectedApplication(ctx *gofr.Context) (*item, error) {

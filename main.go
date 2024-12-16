@@ -65,6 +65,7 @@ func main() {
 	envH := envHandler.New(envSvc)
 
 	app.SubCommand("environment add", envH.AddEnvironment)
+	app.SubCommand("environment list", envH.List)
 
 	app.Run()
 }
