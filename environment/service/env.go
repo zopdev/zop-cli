@@ -138,6 +138,7 @@ func postEnvironment(ctx *gofr.Context, env *Environment) error {
 		}
 
 		ctx.Logger.Errorf("unable to add environment! %v", resp)
+
 		return ErrorAddingEnv
 	}
 

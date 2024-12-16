@@ -64,6 +64,8 @@ func (itemDelegate) Update(_ tea.Msg, _ *list.Model) tea.Cmd {
 }
 
 // Render renders a single list item, applying the selected item style if it's the currently selected item.
+//
+//nolint:gocritic //required for rendering list items and implementing ItemDelegate interface
 func (itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
 	i, ok := listItem.(*item)
 	if !ok {
@@ -113,6 +115,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if ok {
 				m.choice = i
 			}
+
 			return m, tea.Quit
 		}
 	}
