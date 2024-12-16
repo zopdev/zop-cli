@@ -2,16 +2,17 @@ package handler
 
 import (
 	"errors"
-	"gofr.dev/pkg/gofr/cmd/terminal"
-	"gofr.dev/pkg/gofr/testutil"
 	"testing"
-	svc "zop.dev/cli/zop/application/service"
 
 	"github.com/stretchr/testify/require"
+	"gofr.dev/pkg/gofr/cmd/terminal"
+	"gofr.dev/pkg/gofr/testutil"
 	"go.uber.org/mock/gomock"
 	"gofr.dev/pkg/gofr"
 	"gofr.dev/pkg/gofr/cmd"
 	"gofr.dev/pkg/gofr/container"
+
+	svc "zop.dev/cli/zop/application/service"
 )
 
 var errAPICall = errors.New("error in API call")

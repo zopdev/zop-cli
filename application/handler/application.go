@@ -3,11 +3,11 @@ package handler
 import (
 	"errors"
 	"fmt"
-	"gofr.dev/pkg/gofr/cmd/terminal"
 	"sort"
 	"strings"
 
 	"gofr.dev/pkg/gofr"
+	"gofr.dev/pkg/gofr/cmd/terminal"
 )
 
 var (
