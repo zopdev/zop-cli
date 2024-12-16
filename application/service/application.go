@@ -1,3 +1,5 @@
+// Package service provides functionalities for managing applications and their environments.
+// It includes methods for adding a new application and listing existing applications.
 package service
 
 import (
@@ -9,13 +11,27 @@ import (
 	"gofr.dev/pkg/gofr"
 )
 
-type Service struct {
-}
+// Service provides methods for managing applications.
+type Service struct{}
 
+// New creates a new instance of Service.
+//
+// Returns:
+//
+//	A pointer to a Service instance.
 func New() *Service {
 	return &Service{}
 }
 
+// Add adds a new application and optionally its environments.
+//
+// Parameters:
+//   - ctx: The application context containing dependencies and utilities.
+//   - name: The name of the application to be added.
+//
+// Returns:
+//
+//	An error if the application or environments could not be added.
 func (*Service) Add(ctx *gofr.Context, name string) error {
 	var (
 		envs  []Environment
@@ -69,6 +85,14 @@ func (*Service) Add(ctx *gofr.Context, name string) error {
 	return nil
 }
 
+// List retrieves all applications and their environments.
+//
+// Parameters:
+//   - ctx: The application context containing dependencies and utilities.
+//
+// Returns:
+//
+//	A slice of applications and an error, if any.
 func (*Service) List(ctx *gofr.Context) ([]Application, error) {
 	api := ctx.GetHTTPService("api-service")
 
