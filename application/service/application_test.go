@@ -69,7 +69,7 @@ func Test_AddApplication(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := New()
 
-			errSvc := s.AddApplication(ctx, "test")
+			errSvc := s.Add(ctx, "test")
 
 			require.Equal(t, tt.expError, errSvc)
 		})
@@ -147,7 +147,7 @@ func Test_AddApplication_WithEnvs(t *testing.T) {
 
 			defer func() { os.Stdin = oldStdin }()
 
-			errSvc := s.AddApplication(ctx, "test")
+			errSvc := s.Add(ctx, "test")
 			require.Equal(t, tt.expError, errSvc)
 		})
 	}

@@ -5,12 +5,12 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"gofr.dev/pkg/gofr/cmd/terminal"
-	"gofr.dev/pkg/gofr/testutil"
 	"go.uber.org/mock/gomock"
 	"gofr.dev/pkg/gofr"
 	"gofr.dev/pkg/gofr/cmd"
+	"gofr.dev/pkg/gofr/cmd/terminal"
 	"gofr.dev/pkg/gofr/container"
+	"gofr.dev/pkg/gofr/testutil"
 
 	svc "zop.dev/cli/zop/application/service"
 )
@@ -90,10 +90,10 @@ func TestHandler_List(t *testing.T) {
 			mockCalls: []*gomock.Call{
 				mockSvc.EXPECT().GetApplications(gomock.Any()).
 					Return([]svc.Application{
-						{1, "app1",
-							[]svc.Environment{{"env1", 1, nil}, {"env2", 2, nil}}},
-						{2, "app2",
-							[]svc.Environment{{"dev", 1, nil}, {"prod", 2, nil}}},
+						{ID: 1, Name: "app1",
+							Envs: []svc.Environment{{Name: "env1", Order: 1}, {Name: "env2", Order: 2}}},
+						{ID: 2, Name: "app2",
+							Envs: []svc.Environment{{Name: "dev", Order: 1}, {Name: "prod", Order: 2}}},
 					}, nil),
 			},
 			expected: "Applications and their environments:\n\n1.\x1b[38;5;6m app1 " +
@@ -113,7 +113,6 @@ func TestHandler_List(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-
 			h := New(mockSvc)
 			out := testutil.StdoutOutputForFunc(func() {
 				ctx := &gofr.Context{

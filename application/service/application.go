@@ -16,7 +16,7 @@ func New() *Service {
 	return &Service{}
 }
 
-func (*Service) AddApplication(ctx *gofr.Context, name string) error {
+func (*Service) Add(ctx *gofr.Context, name string) error {
 	var (
 		envs  []Environment
 		input string
@@ -69,7 +69,7 @@ func (*Service) AddApplication(ctx *gofr.Context, name string) error {
 	return nil
 }
 
-func (*Service) GetApplications(ctx *gofr.Context) ([]Application, error) {
+func (*Service) List(ctx *gofr.Context) ([]Application, error) {
 	api := ctx.GetHTTPService("api-service")
 
 	reps, err := api.Get(ctx, "applications", nil)
