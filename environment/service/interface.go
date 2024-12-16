@@ -6,5 +6,5 @@ import (
 )
 
 type ApplicationGetter interface {
-	GetApplications(ctx *gofr.Context) ([]appSvc.Application, error)
+	List(ctx *gofr.Context) ([]appSvc.Application, error)
 }

@@ -19,7 +19,7 @@ import (
 
 var errAPICall = errors.New("error in API call")
 
-func Test_AddApplication(t *testing.T) {
+func Test_Add(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -36,29 +36,33 @@ func Test_AddApplication(t *testing.T) {
 
 	testCases := []struct {
 		name      string
+		input     string
 		mockCalls []*gomock.Call
 		expError  error
 	}{
 		{
-			name: "success Post call",
+			name:  "success Post call",
+			input: "n\n",
 			mockCalls: []*gomock.Call{
-				mocks.HTTPService.EXPECT().PostWithHeaders(ctx, "application", nil, gomock.Any(), nil).
+				mocks.HTTPService.EXPECT().PostWithHeaders(ctx, "applications", nil, gomock.Any(), gomock.Any()).
 					Return(&http.Response{StatusCode: http.StatusCreated, Body: io.NopCloser(&errorReader{})}, nil),
 			},
 			expError: nil,
 		},
 		{
-			name: "error in Post call",
+			name:  "error in Post call",
+			input: "n\n",
 			mockCalls: []*gomock.Call{
-				mocks.HTTPService.EXPECT().PostWithHeaders(ctx, "application", nil, gomock.Any(), nil).
+				mocks.HTTPService.EXPECT().PostWithHeaders(ctx, "applications", nil, gomock.Any(), gomock.Any()).
 					Return(nil, errAPICall),
 			},
 			expError: errAPICall,
 		},
 		{
-			name: "unexpected response",
+			name:  "unexpected response",
+			input: "n\n",
 			mockCalls: []*gomock.Call{
-				mocks.HTTPService.EXPECT().PostWithHeaders(ctx, "application", nil, gomock.Any(), nil).
+				mocks.HTTPService.EXPECT().PostWithHeaders(ctx, "applications", nil, gomock.Any(), gomock.Any()).
 					Return(&http.Response{StatusCode: http.StatusInternalServerError, Body: io.NopCloser(bytes.NewBuffer(b))}, nil),
 			},
 			expError: &ErrAPIService{StatusCode: http.StatusInternalServerError, Message: "Something went wrong"},
@@ -69,14 +73,21 @@ func Test_AddApplication(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := New()
 
-			errSvc := s.AddApplication(ctx, "test")
+			r, w, _ := os.Pipe()
+			os.Stdin = r
+			_, _ = w.WriteString(tt.input)
+
+			errSvc := s.Add(ctx, "test")
 
 			require.Equal(t, tt.expError, errSvc)
+
+			r.Close()
+			w.Close()
 		})
 	}
 }
 
-func Test_AddApplication_WithEnvs(t *testing.T) {
+func Test_Add_WithEnvs(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -102,7 +113,7 @@ func Test_AddApplication_WithEnvs(t *testing.T) {
 				{Name: "dev", Order: 2},
 			},
 			mockCalls: []*gomock.Call{
-				mocks.HTTPService.EXPECT().PostWithHeaders(ctx, "application", nil, gomock.Any(), nil).
+				mocks.HTTPService.EXPECT().PostWithHeaders(ctx, "applications", nil, gomock.Any(), gomock.Any()).
 					DoAndReturn(func(_ *gofr.Context, _ string, _, body, _ interface{}) (*http.Response, error) {
 						var app Application
 						_ = json.Unmarshal(body.([]byte), &app)
@@ -121,7 +132,7 @@ func Test_AddApplication_WithEnvs(t *testing.T) {
 			userInput:    "n\n",
 			expectedEnvs: []Environment{},
 			mockCalls: []*gomock.Call{
-				mocks.HTTPService.EXPECT().PostWithHeaders(ctx, "application", nil, gomock.Any(), nil).
+				mocks.HTTPService.EXPECT().PostWithHeaders(ctx, "applications", nil, gomock.Any(), gomock.Any()).
 					DoAndReturn(func(_ *gofr.Context, _ string, _, body, _ interface{}) (*http.Response, error) {
 						var app Application
 						_ = json.Unmarshal(body.([]byte), &app)
@@ -147,8 +158,64 @@ func Test_AddApplication_WithEnvs(t *testing.T) {
 
 			defer func() { os.Stdin = oldStdin }()
 
-			errSvc := s.AddApplication(ctx, "test")
+			errSvc := s.Add(ctx, "test")
 			require.Equal(t, tt.expError, errSvc)
+		})
+	}
+}
+
+func Test_List(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockCont, mocks := container.NewMockContainer(t, func(_ *container.Container, ctrl *gomock.Controller) any {
+		return service.NewMockHTTP(ctrl)
+	})
+
+	mockCont.Services["api-service"] = mocks.HTTPService
+	ctx := &gofr.Context{Container: mockCont, Out: terminal.New()}
+
+	testCases := []struct {
+		name      string
+		mockCalls []*gomock.Call
+		expError  error
+	}{
+		{
+			name: "success Get call",
+			mockCalls: []*gomock.Call{
+				mocks.HTTPService.EXPECT().Get(ctx, "applications", nil).
+					Return(&http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewBufferString(`{ "data" : null }`))}, nil),
+			},
+			expError: nil,
+		},
+		{
+			name: "error in Get call",
+			mockCalls: []*gomock.Call{
+				mocks.HTTPService.EXPECT().Get(ctx, "applications", nil).
+					Return(nil, errAPICall),
+			},
+			expError: errAPICall,
+		},
+		{
+			name: "unexpected response",
+			mockCalls: []*gomock.Call{
+				mocks.HTTPService.EXPECT().Get(ctx, "applications", nil).
+					Return(&http.Response{StatusCode: http.StatusInternalServerError, Body: io.NopCloser(bytes.NewBuffer(nil))}, nil),
+			},
+			expError: &ErrAPIService{StatusCode: http.StatusInternalServerError, Message: "Internal Server Error"},
+		},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			s := New()
+
+			apps, errSvc := s.List(ctx)
+			require.Equal(t, tt.expError, errSvc)
+
+			if tt.expError == nil {
+				require.Empty(t, apps)
+			}
 		})
 	}
 }

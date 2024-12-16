@@ -93,7 +93,7 @@ func (s *Service) List(ctx *gofr.Context) ([]Environment, error) {
 }
 
 func (s *Service) getSelectedApplication(ctx *gofr.Context) (*item, error) {
-	apps, err := s.appGet.GetApplications(ctx)
+	apps, err := s.appGet.List(ctx)
 	if err != nil {
 		return nil, err
 	}

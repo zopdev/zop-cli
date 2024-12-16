@@ -15,7 +15,7 @@ func New(envSvc EnvironmentService) *Handler {
 	return &Handler{envSvc: envSvc}
 }
 
-func (h *Handler) AddEnvironment(ctx *gofr.Context) (any, error) {
+func (h *Handler) Add(ctx *gofr.Context) (any, error) {
 	n, err := h.envSvc.Add(ctx)
 	if err != nil {
 		return nil, err

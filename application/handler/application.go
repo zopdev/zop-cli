@@ -30,7 +30,7 @@ func (h *Handler) Add(ctx *gofr.Context) (any, error) {
 		return nil, ErrorApplicationNameNotProvided
 	}
 
-	err := h.appAdd.AddApplication(ctx, name)
+	err := h.appAdd.Add(ctx, name)
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +39,7 @@ func (h *Handler) Add(ctx *gofr.Context) (any, error) {
 }
 
 func (h *Handler) List(ctx *gofr.Context) (any, error) {
-	apps, err := h.appAdd.GetApplications(ctx)
+	apps, err := h.appAdd.List(ctx)
 	if err != nil {
 		return nil, err
 	}
