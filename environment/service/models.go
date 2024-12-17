@@ -8,20 +8,11 @@ type Environment struct {
 	ID int64 `json:"id"`
 
 	// ApplicationID is the identifier of the application to which this environment belongs.
-	ApplicationID int64 `json:"ApplicationID"`
+	ApplicationID int64 `json:"applicationId"`
 
 	// Level indicates the environment's level, which might be used to denote the hierarchy or order of environments.
-	Level int `json:"Level"`
+	Level int `json:"level"`
 
 	// Name is the name of the environment.
-	Name string `json:"Name"`
-
-	// CreatedAt is the timestamp of when the environment was created.
-	CreatedAt string `json:"createdAt"`
-
-	// UpdatedAt is the timestamp of when the environment was last updated.
-	UpdatedAt string `json:"updatedAt"`
-
-	// DeletedAt is the timestamp of when the environment was deleted, if applicable. This field is optional.
-	DeletedAt string `json:"deletedAt,omitempty"`
+	Name string `json:"name"`
 }
