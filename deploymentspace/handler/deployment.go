@@ -2,13 +2,22 @@ package handler
 
 import "gofr.dev/pkg/gofr"
 
-type Handler struct{}
+type Handler struct {
+	deployService DeploymentService
+}
 
-func New() *Handler {
-	return &Handler{}
+func New(depSvc DeploymentService) *Handler {
+	return &Handler{
+		deployService: depSvc,
+	}
 }
 
 func (h *Handler) Add(ctx *gofr.Context) (any, error) {
 	// Add your code here
-	return nil, nil
+	err := h.deployService.Add(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return "Deployment Created", nil
 }
