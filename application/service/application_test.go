@@ -109,8 +109,8 @@ func Test_Add_WithEnvs(t *testing.T) {
 			name:      "success with environments",
 			userInput: "y\nprod\ny\ndev\nn\n",
 			expectedEnvs: []Environment{
-				{Name: "prod", Order: 1},
-				{Name: "dev", Order: 2},
+				{Name: "prod", Level: 1},
+				{Name: "dev", Level: 2},
 			},
 			mockCalls: []*gomock.Call{
 				mocks.HTTPService.EXPECT().PostWithHeaders(ctx, "applications", nil, gomock.Any(), gomock.Any()).
@@ -119,8 +119,8 @@ func Test_Add_WithEnvs(t *testing.T) {
 						_ = json.Unmarshal(body.([]byte), &app)
 						require.Equal(t, "test", app.Name)
 						require.Equal(t, []Environment{
-							{Name: "prod", Order: 1},
-							{Name: "dev", Order: 2},
+							{Name: "prod", Level: 1},
+							{Name: "dev", Level: 2},
 						}, app.Envs)
 						return &http.Response{StatusCode: http.StatusCreated, Body: io.NopCloser(bytes.NewBuffer(nil))}, nil
 					}),

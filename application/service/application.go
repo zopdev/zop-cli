@@ -40,7 +40,7 @@ func (*Service) Add(ctx *gofr.Context, name string) error {
 
 	app := &Application{Name: name}
 	api := ctx.GetHTTPService("api-service")
-	order := 1
+	level := 1
 
 	ctx.Out.Print("Do you wish to add environments to the application? (y/n) ")
 
@@ -54,8 +54,8 @@ func (*Service) Add(ctx *gofr.Context, name string) error {
 		ctx.Out.Print("Enter environment name: ")
 
 		_, _ = fmt.Scanf("%s", &input)
-		envs = append(envs, Environment{Name: input, Order: order})
-		order++
+		envs = append(envs, Environment{Name: input, Level: level})
+		level++
 
 		ctx.Out.Print("Do you wish to add more? (y/n) ")
 
