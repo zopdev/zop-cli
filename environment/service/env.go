@@ -63,7 +63,7 @@ func (s *Service) Add(ctx *gofr.Context) (int, error) {
 
 		_, _ = fmt.Scanf("%s", &input)
 
-		err = postEnvironment(ctx, &Environment{Name: input, Level: level, ApplicationID: int64(app.ID)})
+		err = postEnvironment(ctx, &Environment{Name: input, Level: level, ApplicationID: app.ID})
 		if err != nil {
 			return level, err
 		}
