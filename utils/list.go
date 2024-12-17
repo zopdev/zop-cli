@@ -21,15 +21,17 @@ const (
 var (
 	// itemStyle defines the default style for list items.
 	itemStyle = lipgloss.NewStyle().PaddingLeft(listPaddingLeft)
+
 	// selectedItemStyle defines the style for the selected list item.
-	selectedItemStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("170"))
+	selectedItemStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#06b6d4"))
+
 	// paginationStyle defines the style for pagination controls.
 	paginationStyle = list.DefaultStyles().PaginationStyle.PaddingLeft(paginationPadding)
-	// helpStyle defines the style for the help text.
-	helpStyle = list.DefaultStyles().HelpStyle
+
+	titleStyle = lipgloss.NewStyle().Background(lipgloss.Color("#0891b2")).Foreground(lipgloss.Color("#ffffff"))
 )
 
-// item represents a single item in the list.
+// Item represents a single item in the list.
 type Item struct {
 	ID   int    // ID is the unique identifier for the item.
 	Name string // Name is the display name of the item.
@@ -120,7 +122,7 @@ func (m *model) View() string {
 	return "\n" + m.list.View()
 }
 
-func RenderList(items []*Item) (*Item, error) {
+func RenderList(title string, items []*Item) (*Item, error) {
 	listItems := make([]list.Item, 0)
 
 	for i := range items {
@@ -128,11 +130,11 @@ func RenderList(items []*Item) (*Item, error) {
 	}
 
 	l := list.New(listItems, itemDelegate{}, listWidth, listHeight)
-	l.Title = "Select the application where you want to add the environment!"
+	l.Title = title
+	l.Styles.Title = titleStyle
 	l.SetShowStatusBar(false)
 	l.SetFilteringEnabled(true)
 	l.Styles.PaginationStyle = paginationStyle
-	l.Styles.HelpStyle = helpStyle
 	l.SetShowStatusBar(false)
 
 	m := model{list: l}

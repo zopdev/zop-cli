@@ -12,6 +12,8 @@ import (
 	"zop.dev/cli/zop/utils"
 )
 
+const listTitle = "Select the application where you want to add the environment!"
+
 var (
 	// ErrUnableToRenderApps is returned when the application list cannot be rendered.
 	ErrUnableToRenderApps = errors.New("unable to render the list of applications")
@@ -122,7 +124,7 @@ func (s *Service) getSelectedApplication(ctx *gofr.Context) (*utils.Item, error)
 		items = append(items, &utils.Item{ID: app.ID, Name: app.Name})
 	}
 
-	choice, err := utils.RenderList(items)
+	choice, err := utils.RenderList(listTitle, items)
 	if err != nil {
 		ctx.Logger.Errorf("unable to render the list of applications! %v", err)
 
