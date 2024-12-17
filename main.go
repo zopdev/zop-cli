@@ -9,7 +9,6 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"gofr.dev/pkg/gofr"
 	"gofr.dev/pkg/gofr/service"
-	_ "modernc.org/sqlite"
 
 	applicationHandler "zop.dev/cli/zop/application/handler"
 	applicationSvc "zop.dev/cli/zop/application/service"
