@@ -9,6 +9,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"gofr.dev/pkg/gofr"
 	"gofr.dev/pkg/gofr/service"
+	_ "modernc.org/sqlite"
 
 	applicationHandler "zop.dev/cli/zop/application/handler"
 	applicationSvc "zop.dev/cli/zop/application/service"
@@ -16,6 +17,8 @@ import (
 	impService "zop.dev/cli/zop/cloud/service/gcp"
 	listSvc "zop.dev/cli/zop/cloud/service/list"
 	impStore "zop.dev/cli/zop/cloud/store/gcp"
+	envHandler "zop.dev/cli/zop/environment/handler"
+	envService "zop.dev/cli/zop/environment/service"
 )
 
 const (
@@ -57,6 +60,12 @@ func main() {
 
 	app.SubCommand("application add", appH.Add)
 	app.SubCommand("application list", appH.List)
+
+	envSvc := envService.New(appSvc)
+	envH := envHandler.New(envSvc)
+
+	app.SubCommand("environment add", envH.Add)
+	app.SubCommand("environment list", envH.List)
 
 	app.Run()
 }
