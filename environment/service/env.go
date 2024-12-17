@@ -114,7 +114,7 @@ func (s *Service) getSelectedApplication(ctx *gofr.Context) (*item, error) {
 
 	m := model{list: l}
 
-	if _, er := tea.NewProgram(&m).Run(); er != nil {
+	if _, er := tea.NewProgram(&m, tea.WithAltScreen()).Run(); er != nil {
 		ctx.Logger.Errorf("unable to render the list of applications! %v", er)
 
 		return nil, ErrUnableToRenderApps

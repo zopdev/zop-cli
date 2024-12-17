@@ -2,7 +2,9 @@ package handler
 
 import (
 	"fmt"
+	"os"
 	"sort"
+	"text/tabwriter"
 
 	"gofr.dev/pkg/gofr"
 )
@@ -33,11 +35,23 @@ func (h *Handler) List(ctx *gofr.Context) (any, error) {
 	sort.Slice(envs, func(i, j int) bool { return envs[i].ID < envs[j].ID })
 
 	// Print a table of all the environments in the application
-	ctx.Out.Println("ID\tName")
+	writer := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.Debug)
 
+	// Print table headers
+	fmt.Fprintln(writer, "ID\tApplicationID\tLevel\tName\tCreatedAt\tUpdatedAt")
+
+	// Print rows for each environment
 	for _, env := range envs {
-		ctx.Out.Printf("%d\t%s\n", env.ID, env.Name)
+		fmt.Fprintf(writer, "%s\t%d\t%s\t%s\n",
+			env.Name,
+			env.Level,
+			env.CreatedAt,
+			env.UpdatedAt,
+		)
 	}
+
+	// Flush the writer to output the table
+	writer.Flush()
 
 	return nil, nil
 }
