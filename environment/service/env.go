@@ -146,7 +146,7 @@ func postEnvironment(ctx *gofr.Context, env *Environment) error {
 	body, _ := json.Marshal(env)
 
 	resp, err := ctx.GetHTTPService("api-service").
-		PostWithHeaders(ctx, "environments", nil, body, map[string]string{
+		PostWithHeaders(ctx, fmt.Sprintf("application/%d/environments", env.ApplicationID), nil, body, map[string]string{
 			"Content-Type": "application/json",
 		})
 	if err != nil {

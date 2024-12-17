@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	envSvc "zop.dev/cli/zop/environment/service"
 
 	"gofr.dev/pkg/gofr"
 
 	cloudSvc "zop.dev/cli/zop/cloud/service/list"
+	envSvc "zop.dev/cli/zop/environment/service"
 	"zop.dev/cli/zop/utils"
 )
 
@@ -68,21 +68,21 @@ func (s *Service) Add(ctx *gofr.Context) error {
 	ctx.Out.Println("Selected environment"+
 		":", env.Name)
 
-	options, err := s.getDeploymentSpaceOptions(ctx, cloudAcc.ID)
+	options, err := getDeploymentSpaceOptions(ctx, cloudAcc.ID)
 	if err != nil {
 		return err
 	}
 
 	request[options.Type] = options
 
-	if er := s.processOptions(ctx, request, options.Path); er != nil {
+	if er := processOptions(ctx, request, options.Path); er != nil {
 		return er
 	}
 
-	return s.submitDeployment(ctx, env.ID, request)
+	return submitDeployment(ctx, env.ID, request)
 }
 
-func (s *Service) processOptions(ctx *gofr.Context, request map[string]any, path string) error {
+func processOptions(ctx *gofr.Context, request map[string]any, path string) error {
 	api := ctx.GetHTTPService("api-service")
 
 	resp, err := api.Get(ctx, path[1:], nil)
@@ -98,19 +98,22 @@ func (s *Service) processOptions(ctx *gofr.Context, request map[string]any, path
 		return ErrGettingDeploymentOptions
 	}
 
+	resp.Body.Close()
+
 	for {
-		opt, er := s.getSelectedOption(ctx, option.Data.Option)
+		opt, er := getSelectedOption(ctx, option.Data.Option)
 		if er != nil {
 			return er
 		}
 
-		s.updateRequestWithOption(request, opt)
+		updateRequestWithOption(request, opt)
 
 		if option.Data.Next == nil {
 			break
 		}
 
 		params := getParameters(opt, &option)
+
 		resp, er = api.Get(ctx, option.Data.Next.Path[1:]+params, nil)
 		if er != nil {
 			ctx.Logger.Errorf("error connecting to zop api! %v", er)
@@ -122,12 +125,14 @@ func (s *Service) processOptions(ctx *gofr.Context, request map[string]any, path
 			ctx.Logger.Errorf("error fetching deployment options! %v", er)
 			return ErrGettingDeploymentOptions
 		}
+
+		resp.Body.Close()
 	}
 
 	return nil
 }
 
-func (s *Service) updateRequestWithOption(request map[string]any, opt map[string]any) {
+func updateRequestWithOption(request, opt map[string]any) {
 	keys := strings.Split(opt["type"].(string), ".")
 	current := request
 
@@ -140,28 +145,30 @@ func (s *Service) updateRequestWithOption(request map[string]any, opt map[string
 		if _, exists := current[key]; !exists {
 			current[key] = make(map[string]any)
 		}
+
 		current = current[key].(map[string]any)
 	}
 }
 
-func (s *Service) submitDeployment(ctx *gofr.Context, envID int64, request map[string]any) error {
+func submitDeployment(ctx *gofr.Context, envID int64, request map[string]any) error {
 	b, err := json.Marshal(request)
 	if err != nil {
 		return err
 	}
 
-	resp, err := ctx.GetHTTPService("api-service").PostWithHeaders(ctx, fmt.Sprintf("environments/%d/deploymentspace", envID), nil, b, map[string]string{
-		"Content-Type": "application/json",
-	})
+	resp, err := ctx.GetHTTPService("api-service").
+		PostWithHeaders(ctx, fmt.Sprintf("environments/%d/deploymentspace", envID), nil, b, map[string]string{
+			"Content-Type": "application/json",
+		})
 	if err != nil {
 		return ErrConnectingZopAPI
 	}
 
 	if resp.StatusCode != http.StatusCreated {
-		return errors.New("error adding deployment")
+		return ErrGettingDeploymentOptions
 	}
 
-	return nil
+	return resp.Body.Close()
 }
 
 func (s *Service) getSelectedCloudAccount(ctx *gofr.Context) (*cloudSvc.CloudAccountResponse, error) {
@@ -189,15 +196,16 @@ func (s *Service) getSelectedCloudAccount(ctx *gofr.Context) (*cloudSvc.CloudAcc
 	return choice.Data.(*cloudSvc.CloudAccountResponse), nil
 }
 
-func (s *Service) getDeploymentSpaceOptions(ctx *gofr.Context, id int64) (*DeploymentSpaceOptions, error) {
+func getDeploymentSpaceOptions(ctx *gofr.Context, id int64) (*DeploymentSpaceOptions, error) {
 	resp, err := ctx.GetHTTPService("api-service").
 		Get(ctx, fmt.Sprintf("cloud-accounts/%d/deployment-space/options", id), nil)
-
 	if err != nil {
 		ctx.Logger.Errorf("error connecting to zop api! %v", err)
 
 		return nil, ErrConnectingZopAPI
 	}
+
+	defer resp.Body.Close()
 
 	var opts struct {
 		Options []*DeploymentSpaceOptions `json:"data"`
@@ -258,7 +266,7 @@ func (s *Service) getSelectedEnvironment(ctx *gofr.Context) (*envSvc.Environment
 	return choice.Data.(*envSvc.Environment), nil
 }
 
-func (s *Service) getSelectedOption(ctx *gofr.Context, items []map[string]any) (map[string]any, error) {
+func getSelectedOption(ctx *gofr.Context, items []map[string]any) (map[string]any, error) {
 	listI := make([]*utils.Item, 0)
 
 	if len(items) == 0 {

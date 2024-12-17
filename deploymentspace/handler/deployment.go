@@ -13,7 +13,6 @@ func New(depSvc DeploymentService) *Handler {
 }
 
 func (h *Handler) Add(ctx *gofr.Context) (any, error) {
-	// Add your code here
 	err := h.deployService.Add(ctx)
 	if err != nil {
 		return nil, err

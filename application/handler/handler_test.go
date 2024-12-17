@@ -91,9 +91,9 @@ func TestHandler_List(t *testing.T) {
 				mockSvc.EXPECT().GetApplications(gomock.Any()).
 					Return([]svc.Application{
 						{ID: 1, Name: "app1",
-							Envs: []svc.Environment{{Name: "env1", Order: 1}, {Name: "env2", Order: 2}}},
+							Envs: []svc.Environment{{Name: "env1", Level: 1}, {Name: "env2", Level: 2}}},
 						{ID: 2, Name: "app2",
-							Envs: []svc.Environment{{Name: "dev", Order: 1}, {Name: "prod", Order: 2}}},
+							Envs: []svc.Environment{{Name: "dev", Level: 1}, {Name: "prod", Level: 2}}},
 					}, nil),
 			},
 			expected: "Applications and their environments:\n\n1.\x1b[38;5;6m app1 " +

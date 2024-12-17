@@ -84,7 +84,7 @@ func (h *Handler) List(ctx *gofr.Context) (any, error) {
 		ctx.Out.Printf(" %s \n\t", app.Name)
 		ctx.Out.ResetColor()
 
-		sort.Slice(app.Envs, func(i, j int) bool { return app.Envs[i].Order < app.Envs[j].Order })
+		sort.Slice(app.Envs, func(i, j int) bool { return app.Envs[i].Level < app.Envs[j].Level })
 
 		for _, env := range app.Envs {
 			s.WriteString(fmt.Sprintf("%s > ", env.Name))
