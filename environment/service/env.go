@@ -13,26 +13,41 @@ import (
 )
 
 var (
-	ErrUnableToRenderApps     = errors.New("unable to render the list of applications")
-	ErrConnectingZopAPI       = errors.New("unable to connect to Zop API")
-	ErrorAddingEnv            = errors.New("unable to add environment")
-	ErrNoApplicationSelected  = errors.New("no application selected")
+	// ErrUnableToRenderApps is returned when the application list cannot be rendered.
+	ErrUnableToRenderApps = errors.New("unable to render the list of applications")
+
+	// ErrConnectingZopAPI is returned when there is an error connecting to the Zop API.
+	ErrConnectingZopAPI = errors.New("unable to connect to Zop API")
+
+	// ErrorAddingEnv is returned when there is an error adding an environment.
+	ErrorAddingEnv = errors.New("unable to add environment")
+
+	// ErrNoApplicationSelected is returned when no application is selected.
+	ErrNoApplicationSelected = errors.New("no application selected")
+
+	// ErrorFetchingEnvironments is returned when there is an error fetching environments for a given application.
 	ErrorFetchingEnvironments = errors.New("unable to fetch environments")
 )
 
+// Service represents the application service that handles application and environment operations.
 type Service struct {
 	appGet ApplicationGetter
 }
 
-func New(appGet ApplicationGetter) *Service { return &Service{appGet: appGet} }
+// New creates a new Service instance with the provided ApplicationGetter.
+func New(appGet ApplicationGetter) *Service {
+	return &Service{appGet: appGet}
+}
 
+// Add prompts the user to add environments to a selected application.
+// It returns the number of environments added and an error, if any.
 func (s *Service) Add(ctx *gofr.Context) (int, error) {
 	app, err := s.getSelectedApplication(ctx)
 	if err != nil {
 		return 0, err
 	}
 
-	ctx.Out.Println("Selected application: ", app)
+	ctx.Out.Println("Selected application: ", app.Name)
 	ctx.Out.Println("Please provide names of environment to be added...")
 
 	var (
@@ -40,6 +55,7 @@ func (s *Service) Add(ctx *gofr.Context) (int, error) {
 		level = 1
 	)
 
+	// Loop to gather environment names from the user and add them to the application.
 	for {
 		ctx.Out.Print("Enter environment name: ")
 
@@ -92,6 +108,8 @@ func (s *Service) List(ctx *gofr.Context) ([]Environment, error) {
 	return data.Envs, nil
 }
 
+// getSelectedApplication renders a list of applications for the user to select from.
+// It returns the selected application or an error if no selection is made.
 func (s *Service) getSelectedApplication(ctx *gofr.Context) (*utils.Item, error) {
 	apps, err := s.appGet.List(ctx)
 	if err != nil {
@@ -118,6 +136,8 @@ func (s *Service) getSelectedApplication(ctx *gofr.Context) (*utils.Item, error)
 	return choice, nil
 }
 
+// postEnvironment sends a POST request to the API to add the provided environment to the application.
+// It returns an error if the request fails or the response status code is not created (201).
 func postEnvironment(ctx *gofr.Context, env *Environment) error {
 	body, _ := json.Marshal(env)
 
@@ -149,6 +169,7 @@ func postEnvironment(ctx *gofr.Context, env *Environment) error {
 	return nil
 }
 
+// getResponse reads the HTTP response body and unmarshals it into the provided interface.
 func getResponse(resp *http.Response, i any) error {
 	defer resp.Body.Close()
 
