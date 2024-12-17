@@ -61,8 +61,8 @@ func getAPIError(resp *http.Response) *ErrAPIService {
 // Environment represents an environment associated with an application.
 type Environment struct {
 	Name            string `json:"name"`                      // Name of the environment
-	Order           int    `json:"order"`                     // Order or priority of the environment
-	DeploymentSpace any    `json:"deploymentSpace,omitempty"` // Optional deployment space information
+	Level           int    `json:"level"`                     // Priority Level of the environment
+	DeploymentSpace any    `json:"deploymentSpace,omitempty"` // DeploymentSpace information for the environment
 }
 
 // Application represents an application with its associated environments.
