@@ -1,4 +1,4 @@
-package service
+package utils
 
 import (
 	"fmt"
@@ -11,10 +11,10 @@ import (
 )
 
 const (
-	listWidth         = 20
-	listHeight        = 14
 	listPaddingLeft   = 2
 	paginationPadding = 4
+	listWidth         = 20
+	listHeight        = 14
 )
 
 //nolint:gochecknoglobals //required TUI styles for displaying the list
@@ -25,12 +25,13 @@ var (
 	helpStyle         = list.DefaultStyles().HelpStyle
 )
 
-type item struct {
-	id   int
-	name string
+type Item struct {
+	ID   int
+	Name string
+	Data any
 }
 
-func (i *item) FilterValue() string { return i.name }
+func (i *Item) FilterValue() string { return i.Name }
 
 type itemDelegate struct{}
 
@@ -42,12 +43,12 @@ func (itemDelegate) Update(_ tea.Msg, _ *list.Model) tea.Cmd { return nil }
 //
 //nolint:gocritic //required to render the list items.
 func (itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
-	i, ok := listItem.(*item)
+	i, ok := listItem.(*Item)
 	if !ok {
 		return
 	}
 
-	str := fmt.Sprintf("%3d. %s", index+1, i.name)
+	str := fmt.Sprintf("%3d. %s", index+1, i.Name)
 
 	fn := itemStyle.Render
 	if index == m.Index() {
@@ -60,7 +61,7 @@ func (itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list.I
 }
 
 type model struct {
-	choice   *item
+	choice   *Item
 	quitting bool
 	list     list.Model
 }
@@ -82,7 +83,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 
 		case "enter":
-			i, ok := m.list.SelectedItem().(*item)
+			i, ok := m.list.SelectedItem().(*Item)
 			if ok {
 				m.choice = i
 			}
@@ -99,4 +100,28 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m *model) View() string {
 	return "\n" + m.list.View()
+}
+
+func RenderList(items []*Item) (*Item, error) {
+	listItems := make([]list.Item, 0)
+
+	for i := range items {
+		listItems = append(listItems, items[i])
+	}
+
+	l := list.New(listItems, itemDelegate{}, listWidth, listHeight)
+	l.Title = "Select the application where you want to add the environment!"
+	l.SetShowStatusBar(false)
+	l.SetFilteringEnabled(true)
+	l.Styles.PaginationStyle = paginationStyle
+	l.Styles.HelpStyle = helpStyle
+	l.SetShowStatusBar(false)
+
+	m := model{list: l}
+
+	if _, er := tea.NewProgram(&m, tea.WithAltScreen()).Run(); er != nil {
+		return nil, er
+	}
+
+	return m.choice, nil
 }

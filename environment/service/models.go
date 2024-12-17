@@ -7,5 +7,4 @@ type Environment struct {
 	Name          string `json:"Name"`
 	CreatedAt     string `json:"createdAt"`
 	UpdatedAt     string `json:"updatedAt"`
-	DeletedAt     string `json:"deletedAt,omitempty"`
 }

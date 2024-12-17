@@ -1,13 +1,15 @@
 package handler
 
 import (
+	"bytes"
 	"fmt"
-	"os"
 	"sort"
 	"text/tabwriter"
 
 	"gofr.dev/pkg/gofr"
 )
+
+const padding = 2
 
 type Handler struct {
 	envSvc EnvironmentService
@@ -34,11 +36,13 @@ func (h *Handler) List(ctx *gofr.Context) (any, error) {
 
 	sort.Slice(envs, func(i, j int) bool { return envs[i].ID < envs[j].ID })
 
+	b := bytes.NewBuffer([]byte{})
+
 	// Print a table of all the environments in the application
-	writer := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.Debug)
+	writer := tabwriter.NewWriter(b, 0, 0, padding, ' ', tabwriter.Debug)
 
 	// Print table headers
-	fmt.Fprintln(writer, "ID\tApplicationID\tLevel\tName\tCreatedAt\tUpdatedAt")
+	fmt.Fprintln(writer, "Name\tLevel\tCreatedAt\tUpdatedAt")
 
 	// Print rows for each environment
 	for _, env := range envs {
@@ -53,5 +57,5 @@ func (h *Handler) List(ctx *gofr.Context) (any, error) {
 	// Flush the writer to output the table
 	writer.Flush()
 
-	return nil, nil
+	return b.String(), nil
 }

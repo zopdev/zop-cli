@@ -7,9 +7,9 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/charmbracelet/bubbles/list"
-	tea "github.com/charmbracelet/bubbletea"
 	"gofr.dev/pkg/gofr"
+
+	"zop.dev/cli/zop/utils"
 )
 
 var (
@@ -32,7 +32,7 @@ func (s *Service) Add(ctx *gofr.Context) (int, error) {
 		return 0, err
 	}
 
-	ctx.Out.Println("Selected application: ", app.name)
+	ctx.Out.Println("Selected application: ", app)
 	ctx.Out.Println("Please provide names of environment to be added...")
 
 	var (
@@ -45,7 +45,7 @@ func (s *Service) Add(ctx *gofr.Context) (int, error) {
 
 		_, _ = fmt.Scanf("%s", &input)
 
-		err = postEnvironment(ctx, &Environment{Name: input, Level: level, ApplicationID: int64(app.id)})
+		err = postEnvironment(ctx, &Environment{Name: input, Level: level, ApplicationID: int64(app.ID)})
 		if err != nil {
 			return level, err
 		}
@@ -71,7 +71,7 @@ func (s *Service) List(ctx *gofr.Context) ([]Environment, error) {
 	}
 
 	resp, err := ctx.GetHTTPService("api-service").
-		Get(ctx, fmt.Sprintf("applications/%d/environments", app.id), nil)
+		Get(ctx, fmt.Sprintf("applications/%d/environments", app.ID), nil)
 	if err != nil {
 		ctx.Logger.Errorf("unable to connect to Zop API! %v", err)
 
@@ -92,39 +92,30 @@ func (s *Service) List(ctx *gofr.Context) ([]Environment, error) {
 	return data.Envs, nil
 }
 
-func (s *Service) getSelectedApplication(ctx *gofr.Context) (*item, error) {
+func (s *Service) getSelectedApplication(ctx *gofr.Context) (*utils.Item, error) {
 	apps, err := s.appGet.List(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	items := make([]list.Item, 0)
+	items := make([]*utils.Item, 0)
 
 	for _, app := range apps {
-		items = append(items, &item{app.ID, app.Name})
+		items = append(items, &utils.Item{ID: app.ID, Name: app.Name})
 	}
 
-	l := list.New(items, itemDelegate{}, listWidth, listHeight)
-	l.Title = "Select the application where you want to add the environment!"
-	l.SetShowStatusBar(false)
-	l.SetFilteringEnabled(true)
-	l.Styles.PaginationStyle = paginationStyle
-	l.Styles.HelpStyle = helpStyle
-	l.SetShowStatusBar(false)
-
-	m := model{list: l}
-
-	if _, er := tea.NewProgram(&m, tea.WithAltScreen()).Run(); er != nil {
-		ctx.Logger.Errorf("unable to render the list of applications! %v", er)
+	choice, err := utils.RenderList(items)
+	if err != nil {
+		ctx.Logger.Errorf("unable to render the list of applications! %v", err)
 
 		return nil, ErrUnableToRenderApps
 	}
 
-	if m.choice == nil {
+	if choice == nil {
 		return nil, ErrNoApplicationSelected
 	}
 
-	return m.choice, nil
+	return choice, nil
 }
 
 func postEnvironment(ctx *gofr.Context, env *Environment) error {
