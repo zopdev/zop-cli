@@ -1,3 +1,6 @@
+// Package utils package provides utility functions for the application.
+// It provides rendering of list based on the list of items provided.
+// It also provides a function to unmarshal the response from the API to the struct.
 package utils
 
 import (
