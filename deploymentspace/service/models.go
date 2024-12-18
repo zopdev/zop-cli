@@ -11,8 +11,13 @@ type DeploymentSpaceOptions struct {
 
 // DeploymentOption represents a list of deployment options and information about the next page, if available.
 type DeploymentOption struct {
-	Option []map[string]any `json:"options"` // A slice of options for deployment.
-	Next   *Next            `json:"next"`    // Information about the next page of options.
+	Option   []map[string]any `json:"options"`  // A slice of options for deployment.
+	Next     *Next            `json:"next"`     // Information about the next page of options.
+	Metadata *metadata        `json:"metadata"` // Additional metadata about the deployment options.
+}
+
+type metadata struct {
+	Name string `json:"name"`
 }
 
 // Next provides details about the subsequent page of deployment options.

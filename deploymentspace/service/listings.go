@@ -119,7 +119,7 @@ func getDeploymentSpaceOptions(ctx *gofr.Context, id int64) (*DeploymentSpaceOpt
 	return choice.Data.(*DeploymentSpaceOptions), nil
 }
 
-func getSelectedOption(ctx *gofr.Context, items []map[string]any) (map[string]any, error) {
+func getSelectedOption(ctx *gofr.Context, items []map[string]any, name string) (map[string]any, error) {
 	listI := make([]*utils.Item, 0)
 
 	if len(items) == 0 {
@@ -130,7 +130,7 @@ func getSelectedOption(ctx *gofr.Context, items []map[string]any) (map[string]an
 		listI = append(listI, &utils.Item{Name: item["name"].(string), Data: item})
 	}
 
-	choice, err := utils.RenderList("Select the option", listI)
+	choice, err := utils.RenderList("Select the "+name, listI)
 	if err != nil {
 		ctx.Logger.Errorf("unable to render the list of environments! %v", err)
 

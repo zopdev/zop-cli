@@ -23,6 +23,9 @@ var (
 
 	// ErrorFetchingEnvironments is returned when there is an error fetching environments for a given application.
 	ErrorFetchingEnvironments = errors.New("unable to fetch environments")
+
+	// ErrUnknown is returned when an unknown error occurs while processing the request.
+	ErrUnknown = errors.New("unknown error occurred while processing the request")
 )
 
 // Service represents the core service that handles cloud account and environment-related operations.
@@ -91,6 +94,8 @@ func (s *Service) Add(ctx *gofr.Context) error {
 }
 
 func processOptions(ctx *gofr.Context, request map[string]any, path string) error {
+	var optionName string
+
 	api := ctx.GetHTTPService("api-service")
 
 	resp, err := api.Get(ctx, path[1:], nil)
@@ -109,7 +114,13 @@ func processOptions(ctx *gofr.Context, request map[string]any, path string) erro
 	resp.Body.Close()
 
 	for {
-		opt, er := getSelectedOption(ctx, option.Data.Option)
+		optionName = "option"
+
+		if option.Data.Metadata != nil {
+			optionName = option.Data.Metadata.Name
+		}
+
+		opt, er := getSelectedOption(ctx, option.Data.Option, optionName)
 		if er != nil {
 			return er
 		}
@@ -128,7 +139,7 @@ func processOptions(ctx *gofr.Context, request map[string]any, path string) erro
 			return ErrConnectingZopAPI
 		}
 
-		option.Data.Next = nil
+		option.Data = nil
 
 		er = utils.GetResponse(resp, &option)
 		if er != nil {
@@ -175,7 +186,14 @@ func submitDeployment(ctx *gofr.Context, envID int64, request map[string]any) er
 	}
 
 	if resp.StatusCode != http.StatusCreated {
-		return ErrGettingDeploymentOptions
+		var er ErrorResponse
+
+		err = utils.GetResponse(resp, &er)
+		if err != nil {
+			return ErrUnknown
+		}
+
+		return &er
 	}
 
 	return resp.Body.Close()

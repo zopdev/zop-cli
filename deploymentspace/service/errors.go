@@ -16,3 +16,13 @@ type ErrNoItemSelected struct {
 func (e *ErrNoItemSelected) Error() string {
 	return fmt.Sprintf("no %s selected", e.Type)
 }
+
+type ErrorResponse struct {
+	Er struct {
+		Message string `json:"message"`
+	} `json:"error"`
+}
+
+func (e *ErrorResponse) Error() string {
+	return e.Er.Message
+}
