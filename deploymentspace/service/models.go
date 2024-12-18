@@ -11,14 +11,14 @@ type DeploymentSpaceOptions struct {
 
 // DeploymentOption represents a list of deployment options and information about the next page, if available.
 type DeploymentOption struct {
-	Option []map[string]any `json:"options"`  // A slice of options for deployment.
-	Next   *NextPage        `json:"nextPage"` // Information about the next page of options.
+	Option []map[string]any `json:"options"` // A slice of options for deployment.
+	Next   *Next            `json:"next"`    // Information about the next page of options.
 }
 
-// NextPage provides details about the subsequent page of deployment options.
+// Next provides details about the subsequent page of deployment options.
 //
 // It includes the name, path, and query parameters for accessing the next page.
-type NextPage struct {
+type Next struct {
 	Name   string            `json:"name"`   // The name of the next page.
 	Path   string            `json:"path"`   // The API path to access the next page.
 	Params map[string]string `json:"params"` // Query parameters required for the next page.

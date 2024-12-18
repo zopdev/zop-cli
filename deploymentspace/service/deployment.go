@@ -128,6 +128,8 @@ func processOptions(ctx *gofr.Context, request map[string]any, path string) erro
 			return ErrConnectingZopAPI
 		}
 
+		option.Data.Next = nil
+
 		er = utils.GetResponse(resp, &option)
 		if er != nil {
 			ctx.Logger.Errorf("error fetching deployment options! %v", er)
