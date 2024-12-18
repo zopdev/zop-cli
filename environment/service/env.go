@@ -7,25 +7,33 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/charmbracelet/bubbles/list"
-	tea "github.com/charmbracelet/bubbletea"
 	"gofr.dev/pkg/gofr"
+
+	"zop.dev/cli/zop/utils"
 )
+
+const listTitle = "Select the application where you want to add the environment!"
 
 var (
 	// ErrUnableToRenderApps is returned when the application list cannot be rendered.
 	ErrUnableToRenderApps = errors.New("unable to render the list of applications")
+
 	// ErrConnectingZopAPI is returned when there is an error connecting to the Zop API.
 	ErrConnectingZopAPI = errors.New("unable to connect to Zop API")
+
 	// ErrorAddingEnv is returned when there is an error adding an environment.
 	ErrorAddingEnv = errors.New("unable to add environment")
+
 	// ErrNoApplicationSelected is returned when no application is selected.
 	ErrNoApplicationSelected = errors.New("no application selected")
+
+	// ErrorFetchingEnvironments is returned when there is an error fetching environments for a given application.
+	ErrorFetchingEnvironments = errors.New("unable to fetch environments")
 )
 
 // Service represents the application service that handles application and environment operations.
 type Service struct {
-	appGet ApplicationGetter // appGet is responsible for fetching the list of applications.
+	appGet ApplicationGetter
 }
 
 // New creates a new Service instance with the provided ApplicationGetter.
@@ -41,8 +49,8 @@ func (s *Service) Add(ctx *gofr.Context) (int, error) {
 		return 0, err
 	}
 
-	ctx.Out.Println("Selected application: ", app.name)
-	ctx.Out.Println("Please provide names of environments to be added...")
+	ctx.Out.Println("Selected application: ", app.Name)
+	ctx.Out.Println("Please provide names of environment to be added...")
 
 	var (
 		input string
@@ -55,14 +63,13 @@ func (s *Service) Add(ctx *gofr.Context) (int, error) {
 
 		_, _ = fmt.Scanf("%s", &input)
 
-		err = postEnvironment(ctx, &Environment{Name: input, Level: level, ApplicationID: int64(app.id)})
+		err = postEnvironment(ctx, &Environment{Name: input, Level: level, ApplicationID: int64(app.ID)})
 		if err != nil {
 			return level, err
 		}
 
 		level++
 
-		// Ask the user if they want to add more environments.
 		ctx.Out.Print("Do you wish to add more? (y/n) ")
 
 		_, _ = fmt.Scanf("%s", &input)
@@ -75,42 +82,60 @@ func (s *Service) Add(ctx *gofr.Context) (int, error) {
 	return level, nil
 }
 
+func (s *Service) List(ctx *gofr.Context) ([]Environment, error) {
+	app, err := s.getSelectedApplication(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := ctx.GetHTTPService("api-service").
+		Get(ctx, fmt.Sprintf("applications/%d/environments", app.ID), nil)
+	if err != nil {
+		ctx.Logger.Errorf("unable to connect to Zop API! %v", err)
+
+		return nil, ErrConnectingZopAPI
+	}
+
+	var data struct {
+		Envs []Environment `json:"data"`
+	}
+
+	err = getResponse(resp, &data)
+	if err != nil {
+		ctx.Logger.Errorf("unable to fetch environments, could not unmarshall response %v", err)
+
+		return nil, ErrorFetchingEnvironments
+	}
+
+	return data.Envs, nil
+}
+
 // getSelectedApplication renders a list of applications for the user to select from.
 // It returns the selected application or an error if no selection is made.
-func (s *Service) getSelectedApplication(ctx *gofr.Context) (*item, error) {
+func (s *Service) getSelectedApplication(ctx *gofr.Context) (*utils.Item, error) {
 	apps, err := s.appGet.List(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	// Prepare a list of items for the user to select from.
-	items := make([]list.Item, 0)
+	items := make([]*utils.Item, 0)
+
 	for _, app := range apps {
-		items = append(items, &item{app.ID, app.Name})
+		items = append(items, &utils.Item{ID: app.ID, Name: app.Name})
 	}
 
-	// Initialize the list component for application selection.
-	l := list.New(items, itemDelegate{}, listWidth, listHeight)
-	l.Title = "Select the application where you want to add the environment!"
-	l.SetShowStatusBar(false)
-	l.SetFilteringEnabled(true)
-	l.Styles.PaginationStyle = paginationStyle
-	l.Styles.HelpStyle = helpStyle
-	l.SetShowStatusBar(false)
+	choice, err := utils.RenderList(listTitle, items)
+	if err != nil {
+		ctx.Logger.Errorf("unable to render the list of applications! %v", err)
 
-	m := model{list: l}
-
-	// Render the list using the bubbletea program.
-	if _, er := tea.NewProgram(&m).Run(); er != nil {
-		ctx.Logger.Errorf("unable to render the list of applications! %v", er)
 		return nil, ErrUnableToRenderApps
 	}
 
-	if m.choice == nil {
+	if choice == nil {
 		return nil, ErrNoApplicationSelected
 	}
 
-	return m.choice, nil
+	return choice, nil
 }
 
 // postEnvironment sends a POST request to the API to add the provided environment to the application.
@@ -124,6 +149,7 @@ func postEnvironment(ctx *gofr.Context, env *Environment) error {
 		})
 	if err != nil {
 		ctx.Logger.Errorf("unable to connect to Zop API! %v", err)
+
 		return ErrConnectingZopAPI
 	}
 

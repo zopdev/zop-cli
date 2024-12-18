@@ -15,4 +15,10 @@ type Environment struct {
 
 	// Name is the name of the environment.
 	Name string `json:"name"`
+
+	// CreatedAt is the timestamp of when the environment was created.
+	CreatedAt string `json:"createdAt"`
+
+	// UpdatedAt is the timestamp of when the environment was last updated.
+	UpdatedAt string `json:"updatedAt"`
 }
