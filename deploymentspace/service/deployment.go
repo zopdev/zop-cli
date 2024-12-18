@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"gofr.dev/pkg/gofr"
+	"gofr.dev/pkg/gofr/cmd/terminal"
 
 	"zop.dev/cli/zop/utils"
 )
@@ -94,9 +95,13 @@ func (s *Service) Add(ctx *gofr.Context) error {
 }
 
 func processOptions(ctx *gofr.Context, request map[string]any, path string) error {
-	var optionName string
+	var (
+		optionName string
+		sp         = terminal.NewDotSpinner(ctx.Out)
+		api        = ctx.GetHTTPService("api-service")
+	)
 
-	api := ctx.GetHTTPService("api-service")
+	sp.Spin(ctx)
 
 	resp, err := api.Get(ctx, path[1:], nil)
 	if err != nil {
@@ -112,6 +117,7 @@ func processOptions(ctx *gofr.Context, request map[string]any, path string) erro
 	}
 
 	resp.Body.Close()
+	sp.Stop()
 
 	for {
 		optionName = "option"
@@ -124,6 +130,8 @@ func processOptions(ctx *gofr.Context, request map[string]any, path string) erro
 		if er != nil {
 			return er
 		}
+
+		sp.Spin(ctx)
 
 		updateRequestWithOption(request, opt)
 
@@ -148,6 +156,7 @@ func processOptions(ctx *gofr.Context, request map[string]any, path string) erro
 		}
 
 		resp.Body.Close()
+		sp.Stop()
 	}
 
 	return nil
