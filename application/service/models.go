@@ -67,7 +67,7 @@ type Environment struct {
 
 // Application represents an application with its associated environments.
 type Application struct {
-	ID   int           `json:"id"`                     // Unique identifier of the application
+	ID   int64         `json:"id"`                     // Unique identifier of the application
 	Name string        `json:"name"`                   // Name of the application
 	Envs []Environment `json:"environments,omitempty"` // List of associated environments
 }

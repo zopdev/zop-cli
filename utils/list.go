@@ -1,3 +1,6 @@
+// Package utils package provides utility functions for the application.
+// It provides rendering of list based on the list of items provided.
+// It also provides a function to unmarshal the response from the API to the struct.
 package utils
 
 import (
@@ -33,7 +36,7 @@ var (
 
 // Item represents a single item in the list.
 type Item struct {
-	ID   int    // ID is the unique identifier for the item.
+	ID   int64  // ID is the unique identifier for the item.
 	Name string // Name is the display name of the item.
 	Data any
 }

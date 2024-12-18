@@ -12,7 +12,7 @@ import (
 	"zop.dev/cli/zop/utils"
 )
 
-const listTitle = "Select the application where you want to add the environment!"
+const listTitle = "Select the application!"
 
 var (
 	// ErrUnableToRenderApps is returned when the application list cannot be rendered.
@@ -63,7 +63,7 @@ func (s *Service) Add(ctx *gofr.Context) (int, error) {
 
 		_, _ = fmt.Scanf("%s", &input)
 
-		err = postEnvironment(ctx, &Environment{Name: input, Level: level, ApplicationID: int64(app.ID)})
+		err = postEnvironment(ctx, &Environment{Name: input, Level: level, ApplicationID: app.ID})
 		if err != nil {
 			return level, err
 		}
@@ -87,6 +87,8 @@ func (s *Service) List(ctx *gofr.Context) ([]Environment, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	ctx.Out.Println("Selected application: ", app.Name)
 
 	resp, err := ctx.GetHTTPService("api-service").
 		Get(ctx, fmt.Sprintf("applications/%d/environments", app.ID), nil)
